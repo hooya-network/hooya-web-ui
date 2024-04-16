@@ -2,7 +2,7 @@ body {
     font-family: sans-serif;
     padding: 0 1ch;
     margin: 10px auto;
-    padding: 0;
+    padding: 0 2ch;
     max-width: 140ch;
 }
 
@@ -27,6 +27,16 @@ header {
 main {
     font-size: 1.3rem;
     line-height: 1.8;
+}
+
+#cid-view {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2ch;
+}
+
+#cid-view h3 {
+    margin: 0;
 }
 
 table {
@@ -90,6 +100,12 @@ td {
     }
 }
 
+@media only screen and (max-width: 700px) {
+    #cid-view {
+        display: block;
+    }
+}
+
 img {
     max-width: 100%;
     height: auto;
@@ -127,6 +143,42 @@ a:hover { color: red }
     padding: 0 1ch;
 }
 
+dl.flat-list {
+    padding: 0 1ch;
+    list-style: none;
+    padding-left: 0;
+}
+
+dl.flat-list dt, dl.flat-list dd {
+    display: inline;
+    margin-left: 0;
+}
+
 .emdash-flat-list li, .slash-flat-list li {
     display: inline;
 }
+
+.tag-descriptor {
+    padding: 0 1ch;
+    margin: 2px 4px;
+    line-height: 1.8rem;
+    border: 1px solid black;
+}
+
+.tag-block [class^='tag-namespace-'] {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -4px;
+    color: #00D1FF;
+}
+
+.file-info {
+    line-height: 1.5em;
+    margin: 0;
+}
+.file-info dt { color: #FF00E6; }
+
+/* Special namespaces */
+.tag-namespace-artist { color: red }
+.tag-namespace-copyright { color: #BD00FF }
+.tag-namespace-character { color: #038F00 }
