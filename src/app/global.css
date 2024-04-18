@@ -35,6 +35,11 @@ main {
     gap: 2ch;
 }
 
+/* Wide previews shown at full width */
+#cid-view.orientation-landscape {
+    grid-template-columns: 1fr;
+}
+
 #cid-view h3 {
     margin: 0;
 }
@@ -102,7 +107,7 @@ td {
 
 @media only screen and (max-width: 700px) {
     #cid-view {
-        display: block;
+        grid-template-columns: 1fr;
     }
 }
 
@@ -165,12 +170,18 @@ dl.flat-list dt, dl.flat-list dd {
     border: 1px solid black;
 }
 
-.tag-block [class^='tag-namespace-'] {
+[class^='tag-namespace-'] {
     display: flex;
     flex-wrap: wrap;
     margin: 0 -4px;
+
+    /* Everything not a special namespace is this color */
     color: #00D1FF;
 }
+/* Special namespaces */
+.tag-namespace-artist { color: red !important }
+.tag-namespace-copyright { color: #BD00FF !important }
+.tag-namespace-character { color: #038F00 !important }
 
 .file-info {
     line-height: 1.5em;
@@ -178,7 +189,3 @@ dl.flat-list dt, dl.flat-list dd {
 }
 .file-info dt { color: #FF00E6; }
 
-/* Special namespaces */
-.tag-namespace-artist { color: red }
-.tag-namespace-copyright { color: #BD00FF }
-.tag-namespace-character { color: #038F00 }

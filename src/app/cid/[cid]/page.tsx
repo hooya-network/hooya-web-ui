@@ -16,6 +16,7 @@ export default async function Page({params}: {params: { cid: string}}) {
   const thumbnails = cidInfo.ext_file.thumbnails
   const thumbnailInfo = thumbnails[thumbnails.length - 1]
   const [thumbnailHeight, thumbnailWidth] = [thumbnailInfo.height, thumbnailInfo.width]
+  const thumbOrientation = thumbnailWidth > thumbnailHeight ? "landscape" : "portrait"
 
   const thumbnailUrl = ConstructCIDThumbnailURL(cid, "medium");
   const contentUrl = ConstructCIDContentURL(cid);
@@ -28,7 +29,7 @@ export default async function Page({params}: {params: { cid: string}}) {
         <li key="original"><Link href={contentUrl}>Original File ({sizeToHumanReadable(size)})</Link></li>
         <li key="mimetype">{mimetype}</li>
       </ul>
-      <div id="cid-view">
+      <div id="cid-view" className={`orientation-${thumbOrientation}`}>
         <div>
           <Link className="img-href" href={contentUrl}>
             <img height={thumbnailHeight} width={thumbnailWidth} className="cid-detail-thumbnail" src={thumbnailUrl} alt=""/>
@@ -49,6 +50,14 @@ export default async function Page({params}: {params: { cid: string}}) {
             {dlHintEntry("Size", sizeToHumanReadable(size))}
           </dl>
           <h3>Net Info</h3>
+          <dl className="file-info flat-list">
+          {dlHintEntry("Uploader", "0xC262a…a048")}
+          {dlHintEntry("Owner", "0xC262a…a048")}
+          {dlHintEntry("Date", "6 hours ago")}
+          {dlHintEntry("Favorites", "0")}
+          {dlHintEntry("Duplication", "1 peer")}
+          {dlHintEntry("Rating", "Safe")}
+          </dl>
         </div>
       </div>
     </main>
