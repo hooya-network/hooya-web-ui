@@ -15,6 +15,8 @@ export async function QueryRecentlyAdded(term?: string) {
     return <ImageBlock
       key={c}
       cid={c}
+      size="small"
+      href={`/cid/${c}`}
     />
   })
 }

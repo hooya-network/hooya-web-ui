@@ -15,13 +15,12 @@ export default async function Page({params}: {params: { cid: string}}) {
 
   // Use largest thumbnail here
   const thumbnails = cidInfo?.ext_file?.thumbnails
-  const thumbnailInfo = thumbnails ?
-    thumbnails[thumbnails.length - 1] : undefined
+  const thumbnailInfo = thumbnails?.get(thumbnails.length - 1)
   const [thumbnailHeight, thumbnailWidth] = thumbnails ?
-    [thumbnailInfo.height, thumbnailInfo.width] : [undefined, undefined]
+    [thumbnailInfo.height, thumbnailInfo.width] : [500, 500]
   const thumbOrientation = thumbnailWidth > thumbnailHeight ? "landscape" : "portrait"
 
-  const thumbnailUrl = thumbnails ? ConstructCIDThumbnailURL(cid, "medium") : undefined
+  const thumbnailUrl = thumbnails ? ConstructCIDThumbnailURL(cid, "medium") : "/no-thumb.gif"
   const contentUrl = ConstructCIDContentURL(cid)
 
   const tags: {namespace: String, descriptor: String}[] = await QueryCidTags(cid)
@@ -34,7 +33,7 @@ export default async function Page({params}: {params: { cid: string}}) {
       </ul>
       <div id="cid-view" className={`orientation-${thumbOrientation}`}>
         <div>
-          { thumbnails &&
+          { thumbnailUrl &&
           <Link className="img-href" href={contentUrl}>
             <img height={thumbnailHeight} width={thumbnailWidth} className="cid-detail-thumbnail" src={thumbnailUrl} alt=""/>
           </Link>
