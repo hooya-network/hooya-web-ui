@@ -8,18 +8,21 @@ export default async function Page({params}: {params: { cid: string}}) {
   const cid = params.cid;
 
   const cidInfo = await QueryCidInfo(cid)
+
   const size = cidInfo.size
   const mimetype = cidInfo.mimetype
   const extFile = cidInfo.ext_file
 
   // Use largest thumbnail here
-  const thumbnails = cidInfo.ext_file.thumbnails
-  const thumbnailInfo = thumbnails[thumbnails.length - 1]
-  const [thumbnailHeight, thumbnailWidth] = [thumbnailInfo.height, thumbnailInfo.width]
+  const thumbnails = cidInfo?.ext_file?.thumbnails
+  const thumbnailInfo = thumbnails ?
+    thumbnails[thumbnails.length - 1] : undefined
+  const [thumbnailHeight, thumbnailWidth] = thumbnails ?
+    [thumbnailInfo.height, thumbnailInfo.width] : [undefined, undefined]
   const thumbOrientation = thumbnailWidth > thumbnailHeight ? "landscape" : "portrait"
 
-  const thumbnailUrl = ConstructCIDThumbnailURL(cid, "medium");
-  const contentUrl = ConstructCIDContentURL(cid);
+  const thumbnailUrl = thumbnails ? ConstructCIDThumbnailURL(cid, "medium") : undefined
+  const contentUrl = ConstructCIDContentURL(cid)
 
   const tags: {namespace: String, descriptor: String}[] = await QueryCidTags(cid)
 
@@ -31,9 +34,11 @@ export default async function Page({params}: {params: { cid: string}}) {
       </ul>
       <div id="cid-view" className={`orientation-${thumbOrientation}`}>
         <div>
+          { thumbnails &&
           <Link className="img-href" href={contentUrl}>
             <img height={thumbnailHeight} width={thumbnailWidth} className="cid-detail-thumbnail" src={thumbnailUrl} alt=""/>
           </Link>
+          }
         </div>
         <div>
           { tags.length > 0 &&
@@ -45,7 +50,7 @@ export default async function Page({params}: {params: { cid: string}}) {
           <dl className="file-info flat-list">
             {dlHintEntry("CID", cid)}
             {dlHintEntry("Mimetype", mimetype)}
-            {extFile.height && extFile.width &&
+            {extFile && extFile.height && extFile.width &&
               dlHintEntry("Dimensions", `${extFile.height}x${extFile.width} ${extFile.height * extFile.width > 100000 ? `(${(extFile.height * extFile.width / 1000000).toFixed(1)} MPixels)` : ""}`)}
             {dlHintEntry("Size", sizeToHumanReadable(size))}
           </dl>
