@@ -1,5 +1,6 @@
 import React from 'react';
 import TagBlock from '@/components/TagBlock';
+import Thumbnail from '@/types';
 import DeepHeader from '@/components/DeepHeader';
 import { ConstructCIDThumbnailURL, ConstructCIDContentURL, QueryCidInfo, QueryCidTags } from '@/helpers';
 import Link from 'next/link';
@@ -14,11 +15,14 @@ export default async function Page({params}: {params: { cid: string}}) {
   const extFile = cidInfo.ext_file
 
   // Use largest thumbnail here
-  const thumbnails = cidInfo?.ext_file?.thumbnails
+  const thumbnails: [Thumbnail] = cidInfo?.ext_file?.thumbnails
   const thumbnailInfo = thumbnails?.[thumbnails.length - 1]
+
   const [thumbnailHeight, thumbnailWidth] = thumbnails ?
     [thumbnailInfo.height, thumbnailInfo.width] : [500, 500]
-  const thumbOrientation = thumbnailWidth > thumbnailHeight ? "landscape" : "portrait"
+
+  // More accomodating layout for images wider than a 4:3 ratio
+  const thumbOrientation = thumbnailInfo?.aspect_ratio < (4/3) ? "portrait" : "landscape"
 
   const thumbnailUrl = thumbnails ? ConstructCIDThumbnailURL(cid, "medium") : "/no-thumb.gif"
   const contentUrl = ConstructCIDContentURL(cid)
