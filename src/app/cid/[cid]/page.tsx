@@ -15,7 +15,7 @@ export default async function Page({params}: {params: { cid: string}}) {
 
   // Use largest thumbnail here
   const thumbnails = cidInfo?.ext_file?.thumbnails
-  const thumbnailInfo = thumbnails?.get(thumbnails.length - 1)
+  const thumbnailInfo = thumbnails?.[thumbnails.length - 1]
   const [thumbnailHeight, thumbnailWidth] = thumbnails ?
     [thumbnailInfo.height, thumbnailInfo.width] : [500, 500]
   const thumbOrientation = thumbnailWidth > thumbnailHeight ? "landscape" : "portrait"
