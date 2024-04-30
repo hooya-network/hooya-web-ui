@@ -15,8 +15,8 @@ export default async function Page({params}: {params: { cid: string}}) {
   const extFile = cidInfo.ext_file
 
   // Use largest thumbnail here
-  const thumbnails: [Thumbnail] = cidInfo?.ext_file?.thumbnails
-  const thumbnailInfo = thumbnails?.[thumbnails.length - 1]
+  const thumbnails: Thumbnail[] = cidInfo?.ext_file?.thumbnails
+  const thumbnailInfo = thumbnails?.[1] || thumbnails?.[0]
 
   const [thumbnailHeight, thumbnailWidth] = thumbnails ?
     [thumbnailInfo.height, thumbnailInfo.width] : [500, 500]
@@ -24,25 +24,49 @@ export default async function Page({params}: {params: { cid: string}}) {
   // More accomodating layout for images wider than a 4:3 ratio
   const thumbOrientation = thumbnailInfo?.aspect_ratio < (4/3) ? "portrait" : "landscape"
 
-  const thumbnailUrl = thumbnails ? ConstructCIDThumbnailURL(cid, "medium") : "/no-thumb.gif"
   const contentUrl = ConstructCIDContentURL(cid)
+  let thumbnailElem =
+    <Link className="img-href" href={contentUrl}>
+      <img
+        height={thumbnailHeight}
+        width={thumbnailWidth}
+        className="cid-detail-thumbnail"
+        src="/no-thumb.gif"
+        alt="No thumbnail provided"/>
+    </Link>
+
+  if (thumbnailInfo?.mimetype?.startsWith("image")) {
+    thumbnailElem = 
+    <Link className="img-href" href={contentUrl}>
+    <img
+        height={thumbnailHeight}
+        width={thumbnailWidth}
+        className="cid-detail-thumbnail"
+        src={ConstructCIDThumbnailURL(cid, "medium")}
+        alt=""/>
+    </Link>
+  } else if (thumbnailInfo?.mimetype?.startsWith("video")) {
+    thumbnailElem = <video controls autoPlay loop muted
+        height={thumbnailHeight}
+        width={thumbnailWidth}
+        className="cid-detail-thumbnail">
+        <source
+          src={ConstructCIDThumbnailURL(cid, "medium")}
+          type={thumbnailInfo.mimetype}
+        />
+        </video>
+  }
 
   const tags: {namespace: String, descriptor: String}[] = await QueryCidTags(cid)
 
   return (
     <main>
-      <ul className="emdash-flat-list">
-        <li key="original"><Link href={contentUrl}>Original File ({sizeToHumanReadable(size)})</Link></li>
+      <ul className="emdash-flat-list" id="download-file">
+        <li key="original"><Link href={contentUrl}>Download File ({sizeToHumanReadable(size)})</Link></li>
         <li key="mimetype">{mimetype}</li>
       </ul>
       <div id="cid-view" className={`orientation-${thumbOrientation}`}>
-        <div>
-          { thumbnailUrl &&
-          <Link className="img-href" href={contentUrl}>
-            <img height={thumbnailHeight} width={thumbnailWidth} className="cid-detail-thumbnail" src={thumbnailUrl} alt=""/>
-          </Link>
-          }
-        </div>
+        <div><h3>Preview</h3>{thumbnailElem}</div>
         <div>
           { tags.length > 0 &&
           <>
