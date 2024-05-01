@@ -16,43 +16,39 @@ export default async function Page({params}: {params: { cid: string}}) {
 
   // Use largest thumbnail here
   const thumbnails: Thumbnail[] = cidInfo?.ext_file?.thumbnails
-  const thumbnailInfo = thumbnails?.[1] || thumbnails?.[0]
-
-  const [thumbnailHeight, thumbnailWidth] = thumbnails ?
-    [thumbnailInfo.height, thumbnailInfo.width] : [500, 500]
+  const thumbnail = thumbnails?.[1] || thumbnails?.[0]
 
   // More accomodating layout for images wider than a 4:3 ratio
-  const thumbOrientation = thumbnailInfo?.aspect_ratio < (4/3) ? "portrait" : "landscape"
+  const thumbOrientation = thumbnail?.aspect_ratio < (4/3) ? "portrait" : "landscape"
 
   const contentUrl = ConstructCIDContentURL(cid)
+
   let thumbnailElem =
-    <Link className="img-href" href={contentUrl}>
       <img
-        height={thumbnailHeight}
-        width={thumbnailWidth}
+        height={500}
+        width={500}
         className="cid-detail-thumbnail"
         src="/no-thumb.gif"
         alt="No thumbnail provided"/>
-    </Link>
 
-  if (thumbnailInfo?.mimetype?.startsWith("image")) {
-    thumbnailElem = 
-    <Link className="img-href" href={contentUrl}>
+  if (thumbnail?.mimetype?.startsWith("image")) {
+    thumbnailElem =
+    <Link href={contentUrl}>
     <img
-        height={thumbnailHeight}
-        width={thumbnailWidth}
+        height={thumbnail.height}
+        width={thumbnail.width}
         className="cid-detail-thumbnail"
-        src={ConstructCIDThumbnailURL(cid, "medium")}
+        src={ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
         alt=""/>
     </Link>
-  } else if (thumbnailInfo?.mimetype?.startsWith("video")) {
+  } else if (thumbnail?.mimetype?.startsWith("video")) {
     thumbnailElem = <video controls autoPlay loop muted
-        height={thumbnailHeight}
-        width={thumbnailWidth}
+        height={thumbnail.height}
+        width={thumbnail.width}
         className="cid-detail-thumbnail">
         <source
-          src={ConstructCIDThumbnailURL(cid, "medium")}
-          type={thumbnailInfo.mimetype}
+          src={ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
+          type={thumbnail.mimetype}
         />
         </video>
   }

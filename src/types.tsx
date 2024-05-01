@@ -1,9 +1,21 @@
 type Thumbnail = {
-  width: Number
-  height: Number
-  mimetype: String,
-  aspect_ratio: Number,
-  cid: String,
-  source_cid: String,
+  width: number
+  height: number
+  mimetype: string,
+  aspect_ratio: number,
+  cid: string,
+  source_cid: string,
 }
 
+type FileType = {
+  cid: string,
+  size: BigInt,
+  mimetype: string,
+  ext_file: {
+    height: BigInt,
+    width: BigInt,
+    aspect_ratio: number,
+    // colors: []
+    thumbnails: Thumbnail[],
+  },
+}
