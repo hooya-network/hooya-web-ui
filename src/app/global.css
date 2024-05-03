@@ -148,13 +148,13 @@ a:hover { color: red }
     padding: 0 1ch;
 }
 
-dl.flat-list {
+.flat-list {
     padding: 0 1ch;
     list-style: none;
     padding-left: 0;
 }
 
-dl.flat-list dt, dl.flat-list dd {
+.flat-list dt, .flat-list dd, .flat-list li {
     display: inline;
     margin-left: 0;
 }
@@ -191,3 +191,11 @@ dl.flat-list dt, dl.flat-list dd {
 }
 .file-info dt { color: #FF00E6; }
 
+#page-navigation {
+    text-align: center;
+    font-size: 1.6rem;
+}
+
+#page-navigation li {
+    margin: 0 1ch;
+}

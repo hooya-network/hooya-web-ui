@@ -1,17 +1,17 @@
 import ImageBlock from '@/components/ImageBlock'
 import Link from 'next/link'
 
-export async function QueryRecentlyAdded(term?: string) {
+export async function QueryRecentlyAdded(page: number, term?: string): Promise<{images: JSX.Element[], pages: { next_page_token: string } } | undefined> {
   const endpoint = WebProxyEndpoint()
 
-  const res = await fetch(endpoint + '/all-files/1')
+  const res = await fetch(endpoint + `/all-files/${page}`)
   if (!res.ok) {
     return
   }
 
   const data: AllFilesResponse = await res.json()
 
-  return data.files.map((f) => {
+  const images = data.files.map((f) => {
     const thumbnails: Thumbnail[] = f.ext_file?.thumbnails
     const thumbnail = thumbnails?.[0]
 
@@ -50,6 +50,12 @@ export async function QueryRecentlyAdded(term?: string) {
 
     return thumbnailelem
   })
+
+  const pages = {
+    next_page_token: data.next_page_token,
+  }
+
+  return {images, pages}
 }
 
 export async function QueryCidInfo(cid: string) {
@@ -93,4 +99,7 @@ function WebProxyEndpoint() {
 type AllFilesResponse = {
   files: FileType[],
   next_page_token: string
+  // TODO prev_page_token
+  // TODO last_page_token
+  // TODO first_page_token
 }
