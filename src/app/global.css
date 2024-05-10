@@ -76,7 +76,7 @@ td {
     line-height: 1;
 }
 
-#home-search-tag-string {
+#home-search .search input {
     width: 50ch;
 }
 
@@ -172,6 +172,10 @@ a:hover { color: red }
     border: 1px solid black;
 }
 
+.tag-block a {
+  color: #00D1FF;
+}
+
 [class^='tag-namespace-'] {
     display: flex;
     flex-wrap: wrap;
@@ -181,9 +185,9 @@ a:hover { color: red }
     color: #00D1FF;
 }
 /* Special namespaces */
-.tag-namespace-artist { color: red !important }
-.tag-namespace-copyright { color: #BD00FF !important }
-.tag-namespace-character { color: #038F00 !important }
+.tag-namespace-artist, .tag-namespace-artist a { color: red !important }
+.tag-namespace-copyright, .tag-namespace-copyright a { color: #BD00FF !important }
+.tag-namespace-character, .tag-namespace-character a { color: #038F00 !important }
 
 .file-info {
     line-height: 1.5em;
@@ -191,11 +195,14 @@ a:hover { color: red }
 }
 .file-info dt { color: #FF00E6; }
 
-#page-navigation {
-    text-align: center;
+.page-navigation {
+    text-align: center
+}
+.page-navigation .flat-list {
     font-size: 1.6rem;
+    margin: 0;
 }
 
-#page-navigation li {
+.page-navigation li {
     margin: 0 1ch;
 }

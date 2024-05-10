@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type TagBlockProps = {
   tags: {namespace: String, descriptor: String}[],
 };
@@ -18,7 +20,7 @@ const TagBlock = ({ tags }: TagBlockProps) => {
         <h3>{namespace.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</h3>
         <div className={`tag-namespace-${namespace}`}>
           {descriptors.map((descriptor) => (
-            <span key="{descriptor}" className="tag-descriptor">?&nbsp;{descriptor}</span>
+            <span key="{descriptor}" className="tag-descriptor">?&nbsp;<Link href={`/?query=${namespace}:${descriptor}`}>{descriptor}</Link></span>
           ))}
         </div>
       </>

@@ -1,3 +1,5 @@
+"use client";
+
 import { ConstructCIDThumbnailURL } from '@/helpers'
 import Image from "next/image"
 import ImageBlock from '@/components/ImageBlock'

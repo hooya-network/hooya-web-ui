@@ -21,7 +21,7 @@ export default async function Page({params}: {params: { cid: string}}) {
   // More accomodating layout for images wider than a 4:3 ratio
   const thumbOrientation = thumbnail?.aspect_ratio < (4/3) ? "portrait" : "landscape"
 
-  const contentUrl = ConstructCIDContentURL(cid)
+  const contentUrl = await ConstructCIDContentURL(cid)
 
   let thumbnailElem =
       <img
@@ -38,7 +38,7 @@ export default async function Page({params}: {params: { cid: string}}) {
         height={thumbnail.height}
         width={thumbnail.width}
         className="cid-detail-thumbnail"
-        src={ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
+        src={await ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
         alt=""/>
     </Link>
   } else if (thumbnail?.mimetype?.startsWith("video")) {
@@ -47,7 +47,7 @@ export default async function Page({params}: {params: { cid: string}}) {
         width={thumbnail.width}
         className="cid-detail-thumbnail">
         <source
-          src={ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
+          src={await ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
           type={thumbnail.mimetype}
         />
         </video>

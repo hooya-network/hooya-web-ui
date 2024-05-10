@@ -1,7 +1,64 @@
-import ImageBlock from '@/components/ImageBlock'
 import Link from 'next/link'
 
-export async function QueryRecentlyAdded(page: number, term?: string): Promise<{images: JSX.Element[], pages: { next_page_token: string } } | undefined> {
+export async function QueryBySearchTerms(terms: string[], page: string): Promise<{images: JSX.Element[], pages: { next_page_token: string } } | undefined> {
+  const endpoint = WebProxyEndpoint()
+
+  const term = terms.join(",")
+  const res = await fetch(endpoint + `/search-files/${term}/${page}`)
+  if (!res.ok) {
+    return
+  }
+
+  const data: AllFilesResponse = await res.json()
+
+  const images = data.files.map((f) => {
+    const thumbnails: Thumbnail[] = f.ext_file?.thumbnails
+    const thumbnail = thumbnails?.[0]
+
+    let thumbnailelem =
+        <Link href={`/cid/${f.cid}`}>
+        <img
+          // height={500}
+          // width={500}
+          src="/no-thumb.gif"
+          alt="no thumbnail provided"/>
+        </Link>
+
+    if (thumbnail?.mimetype?.startsWith("image")) {
+      thumbnailelem =
+      <Link href={`/cid/${f.cid}`}>
+      <img
+          // height={thumbnail.height}
+          // width={thumbnail.width}
+          src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
+          alt=""/>
+      </Link>
+    } else if (thumbnail?.mimetype?.startsWith("video")) {
+      thumbnailelem = 
+      <Link href={`/cid/${f.cid}`}>
+        <video autoPlay loop muted
+          // height={thumbnail.height}
+          // width={thumbnail.width}>
+          >
+          <source
+            src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
+            type={thumbnail.mimetype}
+          />
+          </video>
+      </Link>
+    }
+
+    return thumbnailelem
+  })
+
+  const pages = {
+    next_page_token: data.next_page_token,
+  }
+
+  return {images, pages}
+}
+
+export async function QueryRecentlyAdded(page: string, terms?: string[]): Promise<{images: JSX.Element[], pages: { next_page_token: string } } | undefined> {
   const endpoint = WebProxyEndpoint()
 
   const res = await fetch(endpoint + `/all-files/${page}`)
@@ -82,7 +139,7 @@ export async function QueryCidTags(cid: string) {
 
   return data
 }
-export function ConstructCIDContentURL(cid: string) {
+export async function ConstructCIDContentURL(cid: string) {
   return WebProxyEndpoint() + `/cid-content/${cid}`;
 }
 
