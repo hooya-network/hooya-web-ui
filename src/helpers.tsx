@@ -4,7 +4,7 @@ export async function QueryBySearchTerms(terms: string[], page: string): Promise
   const endpoint = WebProxyEndpoint()
 
   const term = terms.join(",")
-  const res = await fetch(endpoint + `/search-files/${term}/${page}`)
+  const res = await fetch(endpoint + `/search-files/${term}/${page}`, { cache: 'no-store'} )
   if (!res.ok) {
     return
   }
@@ -61,7 +61,7 @@ export async function QueryBySearchTerms(terms: string[], page: string): Promise
 export async function QueryRecentlyAdded(page: string, terms?: string[]): Promise<{images: JSX.Element[], pages: { next_page_token: string } } | undefined> {
   const endpoint = WebProxyEndpoint()
 
-  const res = await fetch(endpoint + `/all-files/${page}`)
+  const res = await fetch(endpoint + `/all-files/${page}`, { cache: 'no-store'} )
   if (!res.ok) {
     return
   }
@@ -131,7 +131,7 @@ export async function QueryCidInfo(cid: string) {
 export async function QueryCidTags(cid: string) {
   const endpoint = WebProxyEndpoint()
 
-  const res = await fetch(endpoint + `/cid-tags/${cid}`)
+  const res = await fetch(endpoint + `/cid-tags/${cid}`, { cache: 'no-store'} )
   if (!res.ok) {
   }
 
