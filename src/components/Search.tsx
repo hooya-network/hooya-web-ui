@@ -27,7 +27,7 @@ export default function Search({page, initSuggest}: {page: string, initSuggest: 
     setSearchSuggestions(queryHint)
   }
 
-  function validate(inputTarget: EventTarget & HTMLFormElement) {
+  function validate(inputTarget: EventTarget & HTMLInputElement) {
     // Cleans query parameter from URL before submission if empty
     const queryInput = document.getElementById("search-query") as any
     if (queryInput?.value == "") {
@@ -38,7 +38,7 @@ export default function Search({page, initSuggest}: {page: string, initSuggest: 
   return <>
       <form className="search"
         id="search-form"
-        onSubmit={(e) => {
+        onSubmit={() => {
           const queryInput = document.getElementById("search-query") as any
           validate(queryInput)
         }}
@@ -52,11 +52,17 @@ export default function Search({page, initSuggest}: {page: string, initSuggest: 
           inputValue={activeQuery}
           onClose={(e) => {
             const t = e.target as EventTarget & HTMLInputElement
-            // HACK <input> isn't filled out by onClose?
-            const query = (document.getElementById("search-query") as any).value = t.value || t.textContent as string;
-            (document.getElementById("search-query") as EventTarget & HTMLInputElement).value = query;
 
-            const queryInput = document.getElementById("search-query") as any;
+            // HACK <input> isn't filled out by onClose?
+            const queryInput = document.getElementById("search-query") as EventTarget & HTMLInputElement;
+            const intendedQuery = t.value || t.textContent as string;
+
+            // Don't search onClose if nothing's changed
+            if (terms?.join(",") == intendedQuery) {
+              return
+            }
+
+            queryInput.value = intendedQuery;
 
             // Just onSubmit again :)
             validate(queryInput);
