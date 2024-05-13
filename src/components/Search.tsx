@@ -2,15 +2,19 @@
 
 import { QuerySuggest } from "@/actions";
 import { useState } from "react";
+import Autocomplete from "@mui/material/Autocomplete"
+import { TextField } from "@mui/material";
+import { useSearchParams } from 'next/navigation'
+import React from "react";
 
-export default function Search({page, initSuggest, terms}: {page: string, initSuggest: string[], terms?: string[]}) {
+export default function Search({page, initSuggest}: {page: string, initSuggest: string[]}) {
+  const searchParams = useSearchParams()
+  const terms = searchParams.get("query")?.split(",")
 
   let [searchSuggestions, setSearchSuggestions] = useState(initSuggest)
   let [activeQuery, setActiveQuery] = useState(terms?.join(","))
 
   async function handleSearchboxChange(inputTarget: EventTarget & HTMLInputElement) {
-    const datalist = inputTarget.list
-
     // Return the initial suggestions suggestions
     if (inputTarget.value == "") {
       setSearchSuggestions(initSuggest)
@@ -23,34 +27,51 @@ export default function Search({page, initSuggest, terms}: {page: string, initSu
     setSearchSuggestions(queryHint)
   }
 
+  function validate(inputTarget: EventTarget & HTMLFormElement) {
+    // Cleans query parameter from URL before submission if empty
+    const queryInput = document.getElementById("search-query") as any
+    if (queryInput?.value == "") {
+      queryInput.disabled = true
+    }
+  }
+
   return <>
       <form className="search"
-        onSubmit={() => {
-          const queryInput = document.getElementById("search-query") as HTMLInputElement
-          if (queryInput?.value == "") {
-            queryInput.disabled = true
-          }
-          if (queryInput?.value == "") {
-            queryInput.disabled = true
-          }
+        id="search-form"
+        onSubmit={(e) => {
+          const queryInput = document.getElementById("search-query") as any
+          validate(queryInput)
         }}
       >
-      <input
-        name="query"
-        id="search-query"
-        list="search-suggest"
-        onChange={(e) => {
-          setActiveQuery(e.target.value)
-          handleSearchboxChange(e.target)
-        }}
-        placeholder={initSuggest[0] || "search by tags"}
-        value={activeQuery}
-      />
-      <datalist id="search-suggest">
-      { searchSuggestions.map((s) => <option key={s} value={s}>{s}</option>) }
-      </datalist>
+      <div className="search-bar">
+        <Autocomplete
+          id="search-query"
+          filterOptions={(x) => x}
+          options={searchSuggestions}
+          disableClearable={true}
+          inputValue={activeQuery}
+          onClose={(e) => {
+            const t = e.target as EventTarget & HTMLInputElement
+            // HACK <input> isn't filled out by onClose?
+            const query = (document.getElementById("search-query") as any).value = t.value || t.textContent as string;
+            (document.getElementById("search-query") as EventTarget & HTMLInputElement).value = query;
 
+            const queryInput = document.getElementById("search-query") as any;
 
+            // Just onSubmit again :)
+            validate(queryInput);
+            (document.getElementById("search-form") as HTMLFormElement).submit()
+          }}
+          onInputChange={(e, val) => {
+            setActiveQuery(val)
+            const t = e.target as EventTarget & HTMLInputElement
+            handleSearchboxChange(t)
+          }}
+          renderInput={(p) => <TextField {...p} label="Search by tags" name="query" />}
+          freeSolo={true}
+        />
+        <input type="submit" value="Go!"/>
+      </div>
       </form>
   </>
 }

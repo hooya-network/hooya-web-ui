@@ -76,12 +76,26 @@ td {
     line-height: 1;
 }
 
-#home-search .search input {
-    width: 50ch;
+#home-search #search-query {
+    width: 80ch;
 }
 
 #home-node-info {
     margin: 2ch auto;
+}
+
+.search-bar {
+    display: flex;
+    margin: auto;
+    justify-content: center;
+}
+
+.search-bar > * {
+    margin: 0 1ch;
+}
+
+.search-bar > input[type="submit"] {
+    align-self: center;
 }
 
 .mason-grid {
