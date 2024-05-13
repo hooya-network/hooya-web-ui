@@ -12,7 +12,7 @@ export default function Search({page, initSuggest}: {page: string, initSuggest: 
   const terms = searchParams.get("query")?.split(",")
 
   let [searchSuggestions, setSearchSuggestions] = useState(initSuggest)
-  let [activeQuery, setActiveQuery] = useState(terms?.join(","))
+  let [activeQuery, setActiveQuery] = useState(terms?.join(",") || "")
 
   async function handleSearchboxChange(inputTarget: EventTarget & HTMLInputElement) {
     // Return the initial suggestions suggestions
@@ -58,7 +58,7 @@ export default function Search({page, initSuggest}: {page: string, initSuggest: 
             const intendedQuery = t.value || t.textContent as string;
 
             // Don't search onClose if nothing's changed
-            if (terms?.join(",") == intendedQuery) {
+            if ((terms?.join(",") || "") == intendedQuery) {
               return
             }
 
