@@ -5,12 +5,14 @@ import { WebProxyEndpoint } from "@/helpers";
 export async function QuerySuggest(term: string, suggestions: 10) {
   const endpoint = WebProxyEndpoint()
 
-  if (term == "") {
-    // TODO popular tag query for init population
-    return []
+  let queryPath
+  if (term.length > 0) {
+    queryPath = `/suggest-tag/${term}`
+  } else {
+    queryPath = "/suggest-tag";
   }
 
-  const res = await fetch(endpoint + `/suggest-tag/${term}`)// , { cache: 'no-store'} )
+  const res = await fetch(endpoint + queryPath)
   if (!res.ok) {
     return []
   }
@@ -23,7 +25,7 @@ export async function QuerySuggest(term: string, suggestions: 10) {
     .map((s) => [s.namespace, s.descriptor].join(":"))
 
   const tagConstraints = data.tag_constraints
-    .map((c) => [c.descriptor, c.namespace].join(":"))
+    .map((c) => [c.namespace, c.descriptor].join(":"))
 
   return tagSuggestions
     .map((s) => tagConstraints.length ? [tagConstraints?.join(","), s].join(",") : s)

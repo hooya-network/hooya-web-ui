@@ -16,10 +16,6 @@ export default function Search({page, initSuggest}: {page: string, initSuggest: 
 
   async function handleSearchboxChange(inputTarget: EventTarget & HTMLInputElement) {
     // Return the initial suggestions suggestions
-    if (inputTarget.value == "") {
-      setSearchSuggestions(initSuggest)
-      return
-    }
 
     // otherwise, 10 suggestions based on current input
     const query = inputTarget.value
