@@ -149,7 +149,7 @@ export function ConstructCIDThumbnailURL(cid: string, size?: string) {
   return WebProxyEndpoint() + `/cid-thumbnail/${cid}/${size}`;
 }
 
-function WebProxyEndpoint() {
+export function WebProxyEndpoint() {
   return process.env.HOOYA_WEB_PROXY_ENDPOINT
 }
 

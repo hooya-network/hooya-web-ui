@@ -36,7 +36,10 @@ searchParams: { [key: string]: string | undefined }
   }
 
   await fetchImages(currPage, terms)
-  const initSuggest = await QuerySuggest("", 10)
+  let initSuggest: String[] = []
+  if (terms) {
+    initSuggest = await QuerySuggest(terms.join(","), 10)
+  }
 
   return (
     <main>
