@@ -15,6 +15,20 @@ header {
     border-bottom: 1px solid;
 }
 
+footer {
+    display: flex;
+    flex-direction: column;
+    padding: 1ch 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    border-top: 1px solid;
+}
+
+footer > * {
+  margin: 1ch 0;
+}
+
 #header-links {
     font-size: 1.5rem;
     margin: 0;
@@ -180,10 +194,8 @@ a:hover { color: red }
 #download-file { margin: 1ch 0 0 0}
 
 .tag-descriptor {
-    padding: 0 1ch;
     margin: 2px 4px;
     line-height: 1.8rem;
-    border: 1px solid black;
 }
 
 .tag-block a {
@@ -198,10 +210,36 @@ a:hover { color: red }
     /* Everything not a special namespace is this color */
     color: #00D1FF;
 }
+
+[class^='tag-namespace-'] a:hover { color: white; background-size: 4px 50px; }
+[class^='tag-namespace-'] a { background-image: linear-gradient(#00D1FF, #00D1FF) }
+
 /* Special namespaces */
-.tag-namespace-artist, .tag-namespace-artist a { color: red !important }
-.tag-namespace-copyright, .tag-namespace-copyright a { color: #BD00FF !important }
-.tag-namespace-character, .tag-namespace-character a { color: #038F00 !important }
+[class^='tag-namespace-'] a, .tag-namespace-copyright a, .tag-namespace-character a {
+    padding: .2ch .5ch;
+    background-position: 0 100%;
+    background-repeat: repeat-x;
+    background-size: 0px 0px;
+    text-decoration: none;
+    transition: background-size .2s, color .4s;
+}
+
+.tag-namespace-artist a:hover { color: white; background-size: 4px 50px; }
+.tag-namespace-artist, .tag-namespace-artist a { color: red }
+.tag-namespace-artist a { background-image: linear-gradient(red, red) }
+
+
+.tag-namespace-copyright a:hover { color: white; background-size: 4px 50px; }
+.tag-namespace-copyright, .tag-namespace-copyright a { color: #BD00FF }
+.tag-namespace-copyright a { background-image: linear-gradient(#BD00FF, #BD00FF) }
+
+.tag-namespace-character a:hover { color: white; background-size: 4px 50px; }
+.tag-namespace-character, .tag-namespace-character a { color: #038F00 }
+.tag-namespace-character a { background-image: linear-gradient(#038F00, #038F00) }
+
+.tag-block h3 {
+    margin: 0
+}
 
 .file-info {
     line-height: 1.5em;

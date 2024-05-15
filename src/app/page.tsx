@@ -43,7 +43,7 @@ searchParams: { [key: string]: string | undefined }
     <main>
     <div id="home-search">
         <h1>HooYa!</h1>
-        <div className="subtext">Browsing “Genesis” instance</div>
+        <div className="subtext">Browsing “Public Demo” instance</div>
         <div className="subtext">Peer ID 0xC262a…a048</div>
         <Search
           page={currPage}

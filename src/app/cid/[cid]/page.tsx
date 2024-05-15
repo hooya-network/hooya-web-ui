@@ -38,7 +38,7 @@ export default async function Page({params}: {params: { cid: string}}) {
         height={thumbnail.height}
         width={thumbnail.width}
         className="cid-detail-thumbnail"
-        src={await ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
+        src={ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
         alt=""/>
     </Link>
   } else if (thumbnail?.mimetype?.startsWith("video")) {
@@ -47,7 +47,7 @@ export default async function Page({params}: {params: { cid: string}}) {
         width={thumbnail.width}
         className="cid-detail-thumbnail">
         <source
-          src={await ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
+          src={ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
           type={thumbnail.mimetype}
         />
         </video>
@@ -81,7 +81,7 @@ export default async function Page({params}: {params: { cid: string}}) {
           <dl className="file-info flat-list">
           {dlHintEntry("Uploader", "0xC262a…a048")}
           {dlHintEntry("Owner", "0xC262a…a048")}
-          {dlHintEntry("Date", "6 hours ago")}
+          {/*dlHintEntry("Date", "6 hours ago")*/}
           {dlHintEntry("Favorites", "0")}
           {dlHintEntry("Duplication", "1 peer")}
           {dlHintEntry("Rating", "Safe")}

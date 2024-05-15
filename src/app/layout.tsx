@@ -1,4 +1,5 @@
 import DeepHeader from '@/components/DeepHeader'
+import Footer from '@/components/Footer'
 import './global.css'
 
 export const metadata = {
@@ -16,6 +17,7 @@ export default function RootLayout({
       <body>
       <DeepHeader/>
       {children}
+      <Footer/>
       </body>
     </html>
   )
