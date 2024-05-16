@@ -3,7 +3,7 @@ body {
     padding: 0 1ch;
     margin: 10px auto;
     padding: 0 2ch;
-    max-width: 140ch;
+    max-width: 1000px;
 }
 
 header {
@@ -30,16 +30,14 @@ footer > * {
 }
 
 #header-links {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     margin: 0;
 }
 
 #header-title {
-    font-size: 1.2rem;
 }
 
 main {
-    font-size: 1.3rem;
     line-height: 1.8;
 }
 
@@ -118,19 +116,13 @@ td {
     justify-content: space-between;
     align-items: center;
     line-height: 0; /* Whitespace */
+    justify-content: center;
 }
 
 .mason-grid > * {
-    flex: 0 0 calc(33% - 10px);
     margin: 2px 4px;
     border: 1px solid;
     display: inline-block;
-}
-
-@media only screen and (max-width: 1000px) {
-    .mason-grid > * {
-        flex: 1 0 calc(50% - 10px);
-    }
 }
 
 @media only screen and (max-width: 700px) {
@@ -251,7 +243,7 @@ a:hover { color: red }
     text-align: center
 }
 .page-navigation .flat-list {
-    font-size: 1.6rem;
+    font-size: 1.2rem;
     margin: 0;
 }
 

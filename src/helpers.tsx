@@ -16,7 +16,7 @@ export async function QueryBySearchTerms(terms: string[], page: string): Promise
     const thumbnail = thumbnails?.[0]
 
     let thumbnailelem =
-        <Link href={`/cid/${f.cid}`}>
+        <Link key={f.cid} href={`/cid/${f.cid}`}>
         <img
           // height={500}
           // width={500}
@@ -26,20 +26,19 @@ export async function QueryBySearchTerms(terms: string[], page: string): Promise
 
     if (thumbnail?.mimetype?.startsWith("image")) {
       thumbnailelem =
-      <Link href={`/cid/${f.cid}`}>
+      <Link key={f.cid} href={`/cid/${f.cid}`}>
       <img
-          // height={thumbnail.height}
-          // width={thumbnail.width}
+          height={thumbnail.height}
+          width={thumbnail.width}
           src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
           alt=""/>
       </Link>
     } else if (thumbnail?.mimetype?.startsWith("video")) {
       thumbnailelem = 
-      <Link href={`/cid/${f.cid}`}>
+      <Link key={f.cid} href={`/cid/${f.cid}`}>
         <video autoPlay loop muted
-          // height={thumbnail.height}
-          // width={thumbnail.width}>
-          >
+          height={thumbnail.height}
+          width={thumbnail.width}>
           <source
             src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
             type={thumbnail.mimetype}
@@ -73,30 +72,29 @@ export async function QueryRecentlyAdded(page: string, terms?: string[]): Promis
     const thumbnail = thumbnails?.[0]
 
     let thumbnailelem =
-        <Link href={`/cid/${f.cid}`}>
+        <Link key={f.cid} href={`/cid/${f.cid}`}>
         <img
-          // height={500}
-          // width={500}
+          height={500}
+          width={500}
           src="/no-thumb.gif"
           alt="no thumbnail provided"/>
         </Link>
 
     if (thumbnail?.mimetype?.startsWith("image")) {
       thumbnailelem =
-      <Link href={`/cid/${f.cid}`}>
+      <Link key={f.cid} href={`/cid/${f.cid}`}>
       <img
-          // height={thumbnail.height}
-          // width={thumbnail.width}
+          height={thumbnail.height}
+          width={thumbnail.width}
           src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
           alt=""/>
       </Link>
     } else if (thumbnail?.mimetype?.startsWith("video")) {
       thumbnailelem = 
-      <Link href={`/cid/${f.cid}`}>
+      <Link key={f.cid} href={`/cid/${f.cid}`}>
         <video autoPlay loop muted
-          // height={thumbnail.height}
-          // width={thumbnail.width}>
-          >
+          height={thumbnail.height}
+          width={thumbnail.width}>
           <source
             src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
             type={thumbnail.mimetype}
