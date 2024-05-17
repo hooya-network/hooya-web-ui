@@ -43,6 +43,7 @@ export default function Search({page, initSuggest}: {page: string, initSuggest: 
         <Autocomplete
           id="search-query"
           filterOptions={(x) => x}
+          sx={{ width: "80%" }}
           options={searchSuggestions}
           disableClearable={true}
           inputValue={activeQuery}
