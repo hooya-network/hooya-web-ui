@@ -4,9 +4,6 @@ import { WebProxyEndpoint } from "@/helpers";
 
 export async function QuerySuggest(term: string, suggestions: 10) {
   const endpoint = WebProxyEndpoint()
-  if (!endpoint) {
-    return []
-  }
 
   let queryPath
   if (term.length > 0) {
@@ -15,7 +12,7 @@ export async function QuerySuggest(term: string, suggestions: 10) {
     queryPath = "/suggest-tag";
   }
 
-  const res = await fetch(endpoint + queryPath)
+  const res = await fetch(endpoint + queryPath, { cache: 'no-store'})
   if (!res.ok) {
     return []
   }

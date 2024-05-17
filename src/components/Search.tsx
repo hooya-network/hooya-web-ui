@@ -47,22 +47,24 @@ export default function Search({page, initSuggest}: {page: string, initSuggest: 
           disableClearable={true}
           inputValue={activeQuery}
           onClose={(e) => {
-            const t = e.target as EventTarget & HTMLInputElement
+            // Eh, not a fan of this anymore. But kinda neat
 
-            // HACK <input> isn't filled out by onClose?
-            const queryInput = document.getElementById("search-query") as EventTarget & HTMLInputElement;
-            const intendedQuery = t.value || t.textContent as string;
+            // const t = e.target as EventTarget & HTMLInputElement
 
-            // Don't search onClose if nothing's changed
-            if ((terms?.join(",") || "") == intendedQuery) {
-              return
-            }
+            // // HACK <input> isn't filled out by onClose?
+            // const queryInput = document.getElementById("search-query") as EventTarget & HTMLInputElement;
+            // const intendedQuery = t.value || t.textContent as string;
 
-            queryInput.value = intendedQuery;
+            // // Don't search onClose if nothing's changed
+            // if ((terms?.join(",") || "") == intendedQuery) {
+            //   return
+            // }
 
-            // Just onSubmit again :)
-            validate(queryInput);
-            (document.getElementById("search-form") as HTMLFormElement).submit()
+            // queryInput.value = intendedQuery;
+
+            // // Just onSubmit again :)
+            // validate(queryInput);
+            // (document.getElementById("search-form") as HTMLFormElement).submit()
           }}
           onInputChange={(e, val) => {
             setActiveQuery(val)
