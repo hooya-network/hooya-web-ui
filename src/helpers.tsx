@@ -137,18 +137,22 @@ export async function QueryCidTags(cid: string) {
 
   return data
 }
-export async function ConstructCIDContentURL(cid: string) {
-  return WebProxyEndpoint() + `/cid-content/${cid}`;
+export function ConstructCIDContentURL(cid: string) {
+  return WebProxyUrl() + `/cid-content/${cid}`;
 }
 
 export function ConstructCIDThumbnailURL(cid: string, size?: string) {
   if (!size)
-    return WebProxyEndpoint() + `/cid-thumbnail/${cid}`;
-  return WebProxyEndpoint() + `/cid-thumbnail/${cid}/${size}`;
+    return WebProxyUrl() + `/cid-thumbnail/${cid}`;
+  return WebProxyUrl() + `/cid-thumbnail/${cid}/${size}`;
 }
 
 export function WebProxyEndpoint() {
   return process.env.HOOYA_WEB_PROXY_ENDPOINT
+}
+
+export function WebProxyUrl() {
+  return process.env.HOOYA_WEB_PROXY_URL
 }
 
 type AllFilesResponse = {

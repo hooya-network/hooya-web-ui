@@ -1,7 +1,5 @@
 import React from 'react';
 import TagBlock from '@/components/TagBlock';
-import Thumbnail from '@/types';
-import DeepHeader from '@/components/DeepHeader';
 import { ConstructCIDThumbnailURL, ConstructCIDContentURL, QueryCidInfo, QueryCidTags } from '@/helpers';
 import Link from 'next/link';
 
@@ -21,7 +19,7 @@ export default async function Page({params}: {params: { cid: string}}) {
   // More accomodating layout for images wider than a 4:3 ratio
   const thumbOrientation = thumbnail?.aspect_ratio < (4/3) ? "portrait" : "landscape"
 
-  const contentUrl = await ConstructCIDContentURL(cid)
+  const contentUrl = ConstructCIDContentURL(cid)
 
   let thumbnailElem =
       <img

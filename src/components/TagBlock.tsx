@@ -16,14 +16,14 @@ const TagBlock = ({ tags }: TagBlockProps) => {
   return (
   <div className="tag-block">
     {Array.from(organizizedTags).map(([namespace, descriptors]) => (
-      <>
+      <div key={`tag-namespace-${namespace}`}>
         <h3>{namespace.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</h3>
         <div className={`tag-namespace-${namespace}`}>
           {descriptors.map((descriptor) => (
             <span key={descriptor as any} className="tag-descriptor">?&nbsp;<Link href={`/?query=${namespace}:${descriptor}`}>{descriptor}</Link></span>
           ))}
         </div>
-      </>
+      </div>
     ))}
   </div>
   )

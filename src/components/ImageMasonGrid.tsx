@@ -9,10 +9,13 @@ type ImageMasonGridProps = {
 };
 
 const ImageMasonGrid = ({ imageBlocks }: ImageMasonGridProps) => {
-    return (
+    return ( <>
+      {imageBlocks?.length ?
       <div className="mason-grid">
-      {imageBlocks?.length && imageBlocks}
+        {imageBlocks}
       </div>
+      : <p>Oops! You got to the end of these search results.</p> }
+    </>
     );
 };
 

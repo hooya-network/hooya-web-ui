@@ -47,16 +47,15 @@ searchParams: { [key: string]: string | undefined }
         <div className="subtext">Peer ID 0xC262a…a048</div>
         <Search
           page={currPage}
-          terms={terms}
           initSuggest={initSuggest}
         />
-        <div className="subtext">hooyad v0.1.0 / hooya-web-ui v0.1.0 / Operated by wesl-ee<br/>
+        <div className="subtext">hooyad v0.1.0-alpha-4 / hooya-web-ui v0.1.0-alpha-4 / Operated by wesl-ee<br/>
         9000+ files indexed / 1000+ associations / 100+ tags</div>
     </div>
     {pages && <>
       <PageNavigation
         currPage={currPage}
-        nextPageToken={pages?.next_page_token}
+        nextPageToken={images.length > 0 ? pages?.next_page_token : undefined}
         query={terms?.join(",")}
       />
       <ImageMasonGrid
@@ -64,7 +63,7 @@ searchParams: { [key: string]: string | undefined }
       />
       <PageNavigation
         currPage={currPage}
-        nextPageToken={pages?.next_page_token}
+        nextPageToken={images.length > 0 ? pages?.next_page_token : undefined}
         query={terms?.join(",")}
       />
     </> }

@@ -19,6 +19,7 @@ footer {
     display: flex;
     flex-direction: column;
     padding: 1ch 0;
+    margin: 1ch 0;
     flex-wrap: wrap;
     justify-content: center;
     text-align: center;
@@ -186,6 +187,7 @@ a:hover { color: red }
 #download-file { margin: 1ch 0 0 0}
 
 .tag-descriptor {
+    font-size: 1.2rem;
     margin: 2px 4px;
     line-height: 1.8rem;
 }

@@ -4,6 +4,9 @@ import { WebProxyEndpoint } from "@/helpers";
 
 export async function QuerySuggest(term: string, suggestions: 10) {
   const endpoint = WebProxyEndpoint()
+  if (!endpoint) {
+    return []
+  }
 
   let queryPath
   if (term.length > 0) {
