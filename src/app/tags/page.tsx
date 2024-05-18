@@ -1,20 +1,33 @@
-import { QuerySuggest } from "@/actions";
+import { QueryAllTags } from "@/actions";
 import TagBlock from "@/components/TagBlock";
 
 export default async function Page() {
-  const tags = await QuerySuggest("", 10)
+  let tags = new Array<{namespace:string,descriptor:string}>()
+  let nextPageToken = "1"
+
+  while (nextPageToken != "") {
+    await QueryAllTags(nextPageToken)
+      .then((tagsResp) => {
+        if (!tagsResp) {
+          nextPageToken = ""
+          return
+        }
+        const t = tagsResp.tags
+        nextPageToken = tagsResp.next_page_token
+        tags = (t
+          .map((t) => {
+            return {
+              namespace: t.namespace,
+              descriptor: t.descriptor,
+            }
+          }))
+      })
+    }
+
   return (
     <main>
       <h2>All Tags</h2>
-        { tags.length > 0 &&
-        <>
-          <TagBlock tags={tags.map((t) => {
-            // Meh. just a WIP
-            const [namespace, descriptor] = t.split(':', 2)
-            return { namespace, descriptor }
-          })}/>
-        </>
-        }
+        <TagBlock tags={tags}/>
     </main>
   )
 }

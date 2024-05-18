@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export default function PageNavigation(
-  {currPage, nextPageToken, query}: {currPage: string, nextPageToken?: string, query?: string})
+  {currPage, nextPageToken, finalPageToken, query}: {currPage: string, nextPageToken?: string, finalPageToken?: string, query?: string})
 {
   const nextHrefParams = {
     page: nextPageToken,
@@ -46,10 +46,12 @@ export default function PageNavigation(
       <li><Link href={prevHrefStr}>{prevPageToken}</Link></li>
     }
     <li>{currPage.toString()}</li>
-    { nextPageToken &&
+    { Number(currPage) < Number(finalPageToken) &&
     <>
       <li><Link href={nextHrefStr}>{nextPageToken}</Link></li>
+      { Number(nextPageToken) < Number(finalPageToken) &&
       <li>…</li>
+      }
       <li><Link href={nextHrefStr}>→</Link></li>
     </>
     }

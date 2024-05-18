@@ -14,7 +14,7 @@ const ImageMasonGrid = ({ imageBlocks }: ImageMasonGridProps) => {
       <div className="mason-grid">
         {imageBlocks}
       </div>
-      : <p>Oops! You got to the end of these search results.</p> }
+      : <p>No results.</p> }
     </>
     );
 };

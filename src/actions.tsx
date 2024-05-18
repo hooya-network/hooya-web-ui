@@ -31,6 +31,18 @@ export async function QuerySuggest(term: string, suggestions: 10) {
     .map((s) => tagConstraints.length ? [tagConstraints?.join(","), s].join(",") : s)
 }
 
+export async function QueryAllTags(pageToken: string): Promise<AllTagsResponse | undefined> {
+  const endpoint = WebProxyEndpoint()
+
+  const res = await fetch(endpoint + `/all-tags/${pageToken}`, { cache: 'no-store'})
+  if (!res.ok) {
+    return
+  }
+
+  const data: AllTagsResponse = await res.json()
+  return data
+}
+
 type SuggestTagResponse = {
   tag_suggestion: {
     namespace: string,
@@ -42,4 +54,14 @@ type SuggestTagResponse = {
     descriptor: string,
     negated: boolean,
   }[]
+}
+
+type AllTagsResponse = {
+  tags: {
+    namespace: string,
+    descriptor: string,
+    count: number,
+  }[]
+  next_page_token: string,
+  final_page_token: string,
 }
