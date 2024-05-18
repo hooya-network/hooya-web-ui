@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-export async function QueryBySearchTerms(terms: string[], page: string): Promise<{images: JSX.Element[], pages: { next_page_token: string } } | undefined> {
+export async function QueryBySearchTerms(terms: string[], page: string): Promise<{images: JSX.Element[], pages: { next_page_token: string, final_page_token: string } } | undefined> {
   const endpoint = WebProxyEndpoint()
 
   const term = terms.join(",")
@@ -18,8 +18,8 @@ export async function QueryBySearchTerms(terms: string[], page: string): Promise
     let thumbnailelem =
         <Link key={f.cid} href={`/cid/${f.cid}`}>
         <img
-          // height={500}
-          // width={500}
+          height={250}
+          width={250}
           src="/no-thumb.gif"
           alt="no thumbnail provided"/>
         </Link>
@@ -52,12 +52,13 @@ export async function QueryBySearchTerms(terms: string[], page: string): Promise
 
   const pages = {
     next_page_token: data.next_page_token,
+    final_page_token: data.final_page_token,
   }
 
   return {images, pages}
 }
 
-export async function QueryRecentlyAdded(page: string, terms?: string[]): Promise<{images: JSX.Element[], pages: { next_page_token: string } } | undefined> {
+export async function QueryRecentlyAdded(page: string, terms?: string[]): Promise<{images: JSX.Element[], pages: { next_page_token: string, final_page_token: string } } | undefined> {
   const endpoint = WebProxyEndpoint()
 
   const res = await fetch(endpoint + `/all-files/${page}`, { cache: 'no-store'} )
@@ -74,8 +75,8 @@ export async function QueryRecentlyAdded(page: string, terms?: string[]): Promis
     let thumbnailelem =
         <Link key={f.cid} href={`/cid/${f.cid}`}>
         <img
-          height={500}
-          width={500}
+          height={250}
+          width={250}
           src="/no-thumb.gif"
           alt="no thumbnail provided"/>
         </Link>
@@ -108,6 +109,7 @@ export async function QueryRecentlyAdded(page: string, terms?: string[]): Promis
 
   const pages = {
     next_page_token: data.next_page_token,
+    final_page_token: data.final_page_token,
   }
 
   return {images, pages}
@@ -157,7 +159,8 @@ export function WebProxyUrl() {
 
 type AllFilesResponse = {
   files: FileType[],
-  next_page_token: string
+  next_page_token: string,
+  final_page_token: string
   // TODO prev_page_token
   // TODO last_page_token
   // TODO first_page_token

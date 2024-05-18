@@ -12,7 +12,8 @@ searchParams: { [key: string]: string | undefined }
 
   let images: JSX.Element[] = []
   let pages = {
-    next_page_token: "1"
+    next_page_token: "1",
+    final_page_token: "1"
   }
 
   async function fetchImages(page: string, terms?: string[]) {
@@ -49,13 +50,14 @@ searchParams: { [key: string]: string | undefined }
           page={currPage}
           initSuggest={initSuggest}
         />
-        <div className="subtext">hooyad v0.1.0-alpha-4 / hooya-web-ui v0.1.0-alpha-4 / Operated by wesl-ee<br/>
+        <div className="subtext">hooyad v0.1.0-alpha-5 / hooya-web-ui v0.1.0-alpha-5 / Operated by wesl-ee<br/>
         9000+ files indexed / 1000+ associations / 100+ tags</div>
     </div>
     {pages && <>
       <PageNavigation
         currPage={currPage}
-        nextPageToken={images.length > 0 ? pages?.next_page_token : undefined}
+        nextPageToken={pages?.next_page_token}
+        finalPageToken={pages?.final_page_token}
         query={terms?.join(",")}
       />
       <ImageMasonGrid
@@ -64,6 +66,7 @@ searchParams: { [key: string]: string | undefined }
       <PageNavigation
         currPage={currPage}
         nextPageToken={images.length > 0 ? pages?.next_page_token : undefined}
+        finalPageToken={pages?.final_page_token}
         query={terms?.join(",")}
       />
     </> }
