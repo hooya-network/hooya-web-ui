@@ -150,11 +150,11 @@ export function ConstructCIDThumbnailURL(cid: string, size?: string) {
 }
 
 export function WebProxyEndpoint() {
-  return process.env.HOOYA_WEB_PROXY_ENDPOINT
+  return process.env.HOOYA_WEB_PROXY_ENDPOINT || "http://localhost:8532"
 }
 
 export function WebProxyUrl() {
-  return process.env.HOOYA_WEB_PROXY_URL
+  return process.env.HOOYA_WEB_PROXY_URL || "http://localhost:8532"
 }
 
 type AllFilesResponse = {
