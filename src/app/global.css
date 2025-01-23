@@ -254,3 +254,12 @@ a:hover { color: red }
 .page-navigation li {
     margin: 0 1ch;
 }
+
+.login-form {
+    display: flex;
+    justify-content: center;
+}
+
+#login {
+    text-align: right;
+}

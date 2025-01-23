@@ -43,6 +43,25 @@ export async function QueryAllTags(pageToken: string): Promise<AllTagsResponse |
   return data
 }
 
+export async function Login(password: string): Promise<string | undefined> {
+  const endpoint = WebProxyEndpoint(); // Assume this function returns the base endpoint
+
+    const response = await fetch(`${endpoint}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `password=${encodeURIComponent(password)}`,
+    });
+
+    if (!response.ok) {
+      return
+    }
+
+    const jwt = await response.text();
+    return jwt;
+}
+
 type SuggestTagResponse = {
   tag_suggestion: {
     namespace: string,
