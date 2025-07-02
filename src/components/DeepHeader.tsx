@@ -15,6 +15,7 @@ export default function DeepHeader() {
         <ul className="slash-flat-list" id="header-links">
             <li><Link href="/">Home</Link></li>
             <li><Link href="/tags">Tags</Link></li>
+            <li><Link href="/upload">Upload</Link></li>
             <li><Link href="/about">About</Link></li>
             {jwt
                 ? <li><Link href="/" onClick={() => {

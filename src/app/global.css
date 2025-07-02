@@ -263,3 +263,125 @@ a:hover { color: red }
 #login {
     text-align: right;
 }
+
+/* Upload page styles */
+.upload-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.upload-dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 3rem;
+    text-align: center;
+    background-color: #fafafa;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.upload-dropzone.drag-over {
+    border-color: #0070f3;
+    background-color: #f0f8ff;
+}
+
+.upload-dropzone p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #666;
+}
+
+.upload-file-input {
+    display: none;
+}
+
+.upload-file-info {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.upload-file-info p {
+    margin: 0.5rem 0;
+}
+
+.upload-button {
+    background-color: #0070f3;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.upload-button:hover {
+    background-color: #005bb5;
+}
+
+.upload-progress {
+    margin-bottom: 1rem;
+}
+
+.upload-progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.upload-progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.upload-progress-fill {
+    height: 100%;
+    background-color: #0070f3;
+    transition: width 0.3s ease;
+}
+
+.upload-success {
+    padding: 1rem;
+    background-color: #d4edda;
+    color: #155724;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.upload-success p {
+    margin: 0.5rem 0;
+}
+
+.upload-success code {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+}
+
+.upload-error {
+    padding: 1rem;
+    background-color: #f8d7da;
+    color: #721c24;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.upload-error p {
+    margin: 0.5rem 0;
+}
+
+.upload-retry-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}

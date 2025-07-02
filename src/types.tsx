@@ -19,3 +19,18 @@ type FileType = {
     thumbnails: Thumbnail[],
   },
 }
+
+type UploadChunkResponse = {
+  status: 'UPLOAD_IN_PROGRESS' | 'UPLOAD_COMPLETE' | 'UPLOAD_ERROR'
+  error_message?: string
+  bytes_received: number
+  next_chunk_index: number
+}
+
+type UploadStatusResponse = {
+  status: 'UPLOAD_IN_PROGRESS' | 'UPLOAD_COMPLETE' | 'UPLOAD_ERROR'
+  bytes_received: number
+  expected_size: number
+  next_chunk_index: number
+  error_message?: string
+}
