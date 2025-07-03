@@ -1,10 +1,17 @@
-import Link from 'next/link'
+import FileImage from '@/components/FileImage'
 
 export async function QueryBySearchTerms(terms: string[], page: string): Promise<{images: JSX.Element[], pages: { next_page_token: string, final_page_token: string } } | undefined> {
   const endpoint = WebProxyEndpoint()
 
   const term = terms.join(",")
-  const res = await fetch(endpoint + `/search-files/${term}/${page}`, { cache: 'no-store'} )
+  const res = await fetch(endpoint + `/search-files/${term}/${page}`, { 
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
+  })
   if (!res.ok) {
     return
   }
@@ -12,42 +19,17 @@ export async function QueryBySearchTerms(terms: string[], page: string): Promise
   const data: AllFilesResponse = await res.json()
 
   const images = data.files.map((f) => {
-    const thumbnails: Thumbnail[] = f.ext_file?.thumbnails
-    const thumbnail = thumbnails?.[0]
-
-    let thumbnailelem =
-        <Link key={f.cid} href={`/cid/${f.cid}`}>
-        <img
-          height={250}
-          width={250}
-          src="/no-thumb.gif"
-          alt="no thumbnail provided"/>
-        </Link>
-
-    if (thumbnail?.mimetype?.startsWith("image")) {
-      thumbnailelem =
-      <Link key={f.cid} href={`/cid/${f.cid}`}>
-      <img
-          height={thumbnail.height}
-          width={thumbnail.width}
-          src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
-          alt=""/>
-      </Link>
-    } else if (thumbnail?.mimetype?.startsWith("video")) {
-      thumbnailelem = 
-      <Link key={f.cid} href={`/cid/${f.cid}`}>
-        <video autoPlay loop muted
-          height={thumbnail.height}
-          width={thumbnail.width}>
-          <source
-            src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
-            type={thumbnail.mimetype}
-          />
-          </video>
-      </Link>
-    }
-
-    return thumbnailelem
+    return (
+      <FileImage
+        key={f.cid}
+        cid={f.cid}
+        thumbnails={f.ext_file?.thumbnails || []}
+        processingStatus={f.processing_status}
+        contentUrl={`/cid/${f.cid}`}
+        size="small"
+        clickable={true}
+      />
+    )
   })
 
   const pages = {
@@ -61,7 +43,14 @@ export async function QueryBySearchTerms(terms: string[], page: string): Promise
 export async function QueryRecentlyAdded(page: string, terms?: string[]): Promise<{images: JSX.Element[], pages: { next_page_token: string, final_page_token: string } } | undefined> {
   const endpoint = WebProxyEndpoint()
 
-  const res = await fetch(endpoint + `/all-files/${page}`, { cache: 'no-store'} )
+  const res = await fetch(endpoint + `/all-files/${page}`, { 
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
+  })
   if (!res.ok) {
     return
   }
@@ -69,42 +58,17 @@ export async function QueryRecentlyAdded(page: string, terms?: string[]): Promis
   const data: AllFilesResponse = await res.json()
 
   const images = data.files.map((f) => {
-    const thumbnails: Thumbnail[] = f.ext_file?.thumbnails
-    const thumbnail = thumbnails?.[0]
-
-    let thumbnailelem =
-        <Link key={f.cid} href={`/cid/${f.cid}`}>
-        <img
-          height={250}
-          width={250}
-          src="/no-thumb.gif"
-          alt="no thumbnail provided"/>
-        </Link>
-
-    if (thumbnail?.mimetype?.startsWith("image")) {
-      thumbnailelem =
-      <Link key={f.cid} href={`/cid/${f.cid}`}>
-      <img
-          height={thumbnail.height}
-          width={thumbnail.width}
-          src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
-          alt=""/>
-      </Link>
-    } else if (thumbnail?.mimetype?.startsWith("video")) {
-      thumbnailelem = 
-      <Link key={f.cid} href={`/cid/${f.cid}`}>
-        <video autoPlay loop muted
-          height={thumbnail.height}
-          width={thumbnail.width}>
-          <source
-            src={ConstructCIDThumbnailURL(thumbnail.source_cid, "small")}
-            type={thumbnail.mimetype}
-          />
-          </video>
-      </Link>
-    }
-
-    return thumbnailelem
+    return (
+      <FileImage
+        key={f.cid}
+        cid={f.cid}
+        thumbnails={f.ext_file?.thumbnails || []}
+        processingStatus={f.processing_status}
+        contentUrl={`/cid/${f.cid}`}
+        size="small"
+        clickable={true}
+      />
+    )
   })
 
   const pages = {
@@ -138,6 +102,9 @@ export async function QueryCidTags(cid: string) {
   const data = await res.json()
 
   return data
+}
+export async function ConstructCIDProcessingURL(cid: string) {
+  return WebProxyUrl() + `/api/events/processing/${cid}`;
 }
 export function ConstructCIDContentURL(cid: string) {
   return WebProxyUrl() + `/cid-content/${cid}`;

@@ -385,3 +385,14 @@ a:hover { color: red }
     border-radius: 4px;
     cursor: pointer;
 }
+
+/* Processing thumbnail styles */
+.processing-thumbnail {
+    opacity: 0.8;
+    filter: brightness(0.9);
+}
+
+.processing-thumbnail:hover {
+    opacity: 1.0;
+    filter: brightness(1.0);
+}

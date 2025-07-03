@@ -1,5 +1,6 @@
 import React from 'react';
 import TagBlock from '@/components/TagBlock';
+import FileImage from '@/components/FileImage';
 import { ConstructCIDThumbnailURL, ConstructCIDContentURL, QueryCidInfo, QueryCidTags } from '@/helpers';
 import Link from 'next/link';
 
@@ -13,7 +14,7 @@ export default async function Page({params}: {params: { cid: string}}) {
   const extFile = cidInfo.ext_file
 
   // Use largest thumbnail here
-  const thumbnails: Thumbnail[] = cidInfo?.ext_file?.thumbnails
+  const thumbnails: Thumbnail[] = cidInfo?.ext_file?.thumbnails || []
   const thumbnail = thumbnails?.[1] || thumbnails?.[0]
 
   // More accomodating layout for images wider than a 4:3 ratio
@@ -21,35 +22,17 @@ export default async function Page({params}: {params: { cid: string}}) {
 
   const contentUrl = ConstructCIDContentURL(cid)
 
-  let thumbnailElem =
-      <img
-        height={500}
-        width={500}
-        className="cid-detail-thumbnail"
-        src="/no-thumb.gif"
-        alt="No thumbnail provided"/>
-
-  if (thumbnail?.mimetype?.startsWith("image")) {
-    thumbnailElem =
-    <Link href={contentUrl}>
-    <img
-        height={thumbnail.height}
-        width={thumbnail.width}
-        className="cid-detail-thumbnail"
-        src={ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
-        alt=""/>
-    </Link>
-  } else if (thumbnail?.mimetype?.startsWith("video")) {
-    thumbnailElem = <video controls autoPlay loop muted
-        height={thumbnail.height}
-        width={thumbnail.width}
-        className="cid-detail-thumbnail">
-        <source
-          src={ConstructCIDThumbnailURL(thumbnail.source_cid, "medium")}
-          type={thumbnail.mimetype}
-        />
-        </video>
-  }
+  const thumbnailElem = (
+    <FileImage 
+      cid={cid}
+      thumbnails={thumbnails || []}
+      processingStatus={cidInfo.processing_status}
+      contentUrl={contentUrl}
+      className="cid-detail-thumbnail"
+      size="medium"
+      clickable={true}
+    />
+  )
 
   const tags: {namespace: String, descriptor: String}[] = await QueryCidTags(cid)
 
