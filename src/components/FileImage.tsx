@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Thumbnail } from '@/types'
-import { ConstructCIDThumbnailURL, ConstructCIDProcessingURL, QueryCidInfo } from '@/helpers'
+import { ConstructCIDThumbnailURL, ConstructCIDProcessingURL } from '@/helpers'
+import { getCidInfo } from '@/lib/hooya-api-client'
 
 interface FileImageProps {
   cid: string
@@ -28,39 +30,37 @@ export default function FileImage({
   const [currentStatus, setCurrentStatus] = useState(processingStatus)
   const eventSourceRef = useRef<EventSource | null>(null)
 
-  useEffect(() => {
-    // sync currentStatus with processingStatus prop
-    setCurrentStatus(processingStatus)
-  }, [processingStatus])
-
-  useEffect(() => {
-    // sync currentThumbnails with thumbnails prop
-    setCurrentThumbnails(thumbnails)
-  }, [thumbnails])
-
-  useEffect(() => {
-    // only start sse if processing (status = 1)
-    if (currentStatus === 1) {
-      startProcessingMonitor(cid)
+  const refreshThumbnails = useCallback(async () => {
+    try {
+      const data = await getCidInfo(cid)
+      if (data.ext_file?.thumbnails) {
+        setCurrentThumbnails(data.ext_file.thumbnails)
+        setCurrentStatus(0) // mark as finished
+      }
+    } catch (error) {
+      console.error('Failed to refresh thumbnails:', error)
     }
+  }, [cid])
 
-    return () => {
-      closeProcessingMonitor()
+  const closeProcessingMonitor = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close()
+      eventSourceRef.current = null
     }
-  }, [cid, currentStatus])
+  }
 
-  const startProcessingMonitor = async (cid: string) => {
+  const startProcessingMonitor = useCallback(async (cid: string) => {
     if (eventSourceRef.current) return // already monitoring
 
     const eventSource = new EventSource(await ConstructCIDProcessingURL(cid))
 
-    eventSource.addEventListener('thumbnail_generated', async (event) => {
+    eventSource.addEventListener('thumbnail_generated', async () => {
       // first thumbnail is ready - switch from processing.gif to thumbnail
       await refreshThumbnails()
       // don't close monitor yet - more thumbnails might be generating
     })
 
-    eventSource.addEventListener('video_preview_generated', async (event) => {
+    eventSource.addEventListener('video_preview_generated', async () => {
       // first video preview is ready - switch from processing.gif to preview
       await refreshThumbnails()
       // don't close monitor yet - more previews might be generating
@@ -83,26 +83,28 @@ export default function FileImage({
     }
 
     eventSourceRef.current = eventSource
-  }
+  }, [refreshThumbnails])
 
-  const closeProcessingMonitor = () => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close()
-      eventSourceRef.current = null
-    }
-  }
+  useEffect(() => {
+    // sync currentStatus with processingStatus prop
+    setCurrentStatus(processingStatus)
+  }, [processingStatus])
 
-  const refreshThumbnails = async () => {
-    try {
-      const data = await QueryCidInfo(cid)
-      if (data.ext_file?.thumbnails) {
-        setCurrentThumbnails(data.ext_file.thumbnails)
-        setCurrentStatus(0) // mark as finished
-      }
-    } catch (error) {
-      console.error('Failed to refresh thumbnails:', error)
+  useEffect(() => {
+    // sync currentThumbnails with thumbnails prop
+    setCurrentThumbnails(thumbnails)
+  }, [thumbnails])
+
+  useEffect(() => {
+    // only start sse if processing (status = 1)
+    if (currentStatus === 1) {
+      startProcessingMonitor(cid)
     }
-  }
+
+    return () => {
+      closeProcessingMonitor()
+    }
+  }, [cid, currentStatus, startProcessingMonitor])
 
   // render logic
   const renderImage = () => {
@@ -111,11 +113,11 @@ export default function FileImage({
       const thumbnail = currentThumbnails[0] // use first available thumbnail
       if (thumbnail?.mimetype?.startsWith("image")) {
         const imgElement = (
-          <img
+          <Image
             height={thumbnail.height}
             width={thumbnail.width}
             className={className}
-            src={ConstructCIDThumbnailURL(thumbnail.source_cid, size)}
+            src={ConstructCIDThumbnailURL(thumbnail.source_cid, typeof size === 'number' ? size.toString() : size)}
             alt=""
           />
         )
@@ -128,7 +130,7 @@ export default function FileImage({
             width={thumbnail.width}
             className={className}>
             <source
-              src={ConstructCIDThumbnailURL(thumbnail.source_cid, size)}
+              src={ConstructCIDThumbnailURL(thumbnail.source_cid, typeof size === 'number' ? size.toString() : size)}
               type={thumbnail.mimetype}
             />
           </video>
@@ -141,7 +143,7 @@ export default function FileImage({
     // show processing gif if currently processing
     if (currentStatus === 1) {
       return (
-        <img
+        <Image
           height={500}
           width={500}
           className={`${className} processing-thumbnail`}
@@ -153,7 +155,7 @@ export default function FileImage({
 
     // fallback to no-thumb.gif (for finished with no thumbs, failed, etc)
     const imgElement = (
-      <img
+      <Image
         height={500}
         width={500}
         className={className}
@@ -161,7 +163,7 @@ export default function FileImage({
         alt="No thumbnail available"
       />
     )
-    
+
     return clickable ? <Link href={contentUrl}>{imgElement}</Link> : imgElement
   }
 

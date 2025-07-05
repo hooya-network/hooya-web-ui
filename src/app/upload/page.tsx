@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { startUploadSession, completeUpload, uploadChunk } from '@/actions'
+import { startUploadSession, completeUpload, uploadChunk } from '@/lib/upload-client'
 
 type UploadStatus = 'idle' | 'uploading' | 'complete' | 'error'
 
@@ -20,7 +20,7 @@ export default function UploadPage() {
     totalBytes: 0,
     currentChunk: 0
   })
-  const [uploadId, setUploadId] = useState<string | null>(null)
+
   const [resultCid, setResultCid] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [isDragOver, setIsDragOver] = useState(false)
@@ -55,18 +55,11 @@ export default function UploadPage() {
       setUploadStatus('uploading')
       setErrorMessage('')
 
-      // Get JWT from localStorage
-      const jwt = localStorage.getItem('jwt')
-      if (!jwt) {
-        throw new Error('Please log in to upload files')
-      }
-
       // 1. Start upload session
       const CHUNK_SIZE = 1024 * 1024 // 1MB
-      console.log('Starting upload session...', { size: file.size, type: file.type, jwt: jwt ? 'present' : 'missing' })
-      const session = await startUploadSession(file.size, file.type, CHUNK_SIZE, jwt)
+      console.log('Starting upload session...', { size: file.size, type: file.type })
+      const session = await startUploadSession(file.size, file.type, CHUNK_SIZE)
       console.log('Session started:', session)
-      setUploadId(session.upload_id)
 
       // 2. Upload chunks using server-controlled indexing
       let chunkIndex = 0
@@ -87,9 +80,9 @@ export default function UploadPage() {
         }
         const base64Data = btoa(binaryString)
         
-        // Use server action for chunk upload
+        // upload chunk
         console.log('Uploading chunk:', { chunkIndex, size: arrayBuffer.byteLength })
-        const chunkResult = await uploadChunk(session.upload_id, chunkIndex, base64Data, jwt)
+        const chunkResult = await uploadChunk(session.upload_id, chunkIndex, base64Data)
         console.log('Chunk result:', chunkResult)
         
         // Check for upload error
@@ -111,7 +104,7 @@ export default function UploadPage() {
         if (chunkResult.status === 1) { // UPLOAD_COMPLETE = 1
           // When status is COMPLETE, we should call completeUpload to get the final CID
           console.log('Upload complete, finalizing...')
-          const result = await completeUpload(session.upload_id, jwt)
+          const result = await completeUpload(session.upload_id)
           setResultCid(result.cid)
           setUploadStatus('complete')
           return // Exit the function here
@@ -120,7 +113,7 @@ export default function UploadPage() {
 
       // 3. Complete upload (this should only run if we exit the loop without UPLOAD_COMPLETE)
       console.log('Finalizing upload after all chunks...')
-      const result = await completeUpload(session.upload_id, jwt)
+      const result = await completeUpload(session.upload_id)
       setResultCid(result.cid)
       setUploadStatus('complete')
       

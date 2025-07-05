@@ -20,15 +20,15 @@ export default function PageNavigation(
   }
 
   let nextHrefStr = "?" + Object.entries(nextHrefParams)
-    .filter(([_, val]) => val)
+    .filter(([, val]) => val)
     .map(([key, val]) => `${key}=${val}`).join('&');
 
   let firstHrefStr = "?" + Object.entries(firstHrefParams)
-    .filter(([_, val]) => val)
+    .filter(([, val]) => val)
     .map(([key, val]) => `${key}=${val}`).join('&');
 
   let prevHrefStr = "?" + Object.entries(prevHrefParams)
-    .filter(([_, val]) => val)
+    .filter(([, val]) => val)
     .map(([key, val]) => `${key}=${val}`).join('&');
 
 

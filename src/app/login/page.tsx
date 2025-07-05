@@ -1,43 +1,36 @@
 "use client";
 
-import { login } from "@/actions";
-import { useFormState } from "react-dom";
-import { useEffect } from "react";
+import { loginUser } from "@/lib/hooya-api-client";
+import { useState } from "react";
 
 export default function Page() {
-  const [state, formAction] = useFormState(
-    async (prevState: any, formData: FormData) => {
-      const result = await login(formData);
-      
-      if (result.success && result.jwt) {
-        return { 
-          message: "Login successful!", 
-          jwt: result.jwt,
-          success: true 
-        };
-      } else {
-        return { 
-          message: result.error || "Login failed",
-          success: false 
-        };
-      }
-    },
-    { message: "", success: false }
-  );
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Handle successful login
-  useEffect(() => {
-    if (state.success && state.jwt) {
-      localStorage.setItem("jwt", state.jwt);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage("");
+
+    const formData = new FormData(e.currentTarget);
+    const password = formData.get("password") as string;
+
+    try {
+      await loginUser(password);
+      setMessage("Login successful!");
       window.location.href = "/";
+    } catch (error) {
+      setMessage("Login failed");
+    } finally {
+      setIsLoading(false);
     }
-  }, [state]);
+  };
 
   return (
     <>
       <p>Logged in users may administer this instance.</p>
       <div className="login-form">
-        <form action={formAction}>
+        <form onSubmit={handleSubmit}>
           <label htmlFor="password">Operator password</label>
           <br />
           <input
@@ -47,11 +40,11 @@ export default function Page() {
             required
           />
           <br />
-          <button type="submit">
-            Go
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Go"}
           </button>
         </form>
-        {state.message && <p>{state.message}</p>}
+        {message && <p>{message}</p>}
       </div>
     </>
   );

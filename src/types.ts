@@ -1,4 +1,4 @@
-type Thumbnail = {
+export type Thumbnail = {
   width: number
   height: number
   mimetype: string,
@@ -7,7 +7,7 @@ type Thumbnail = {
   source_cid: string,
 }
 
-type FileType = {
+export type FileType = {
   cid: string,
   size: BigInt,
   mimetype: string,
@@ -20,14 +20,14 @@ type FileType = {
   },
 }
 
-type UploadChunkResponse = {
+export type UploadChunkResponse = {
   status: 'UPLOAD_IN_PROGRESS' | 'UPLOAD_COMPLETE' | 'UPLOAD_ERROR'
   error_message?: string
   bytes_received: number
   next_chunk_index: number
 }
 
-type UploadStatusResponse = {
+export type UploadStatusResponse = {
   status: 'UPLOAD_IN_PROGRESS' | 'UPLOAD_COMPLETE' | 'UPLOAD_ERROR'
   bytes_received: number
   expected_size: number
