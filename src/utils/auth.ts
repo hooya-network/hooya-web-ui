@@ -12,33 +12,26 @@ export function shouldRefreshToken(token: string): boolean {
 
     const payload: JWTPayload = JSON.parse(atob(parts[1]));
 
-    const now = Date.now() / 1000; // Convert to seconds
+    const now = Date.now() / 1000;
     const expiryTime = payload.exp;
     const issuedTime = payload.iat;
     const timeUntilExpiry = expiryTime - now;
 
-    // if already expired, don't refresh
+    // if already expired remove it
     if (timeUntilExpiry <= 0) {
-      console.log('Token already expired');
+      localStorage.removeItem('jwt');
       return false;
     }
 
-    // calculate token lifetime and adaptive refresh point
     const tokenLifetime = expiryTime - issuedTime;
     const tokenAge = now - issuedTime;
-    
-    // refresh when halfway through token lifetime, but not later than 5 minutes before expiry
+
+    // refresh jwt halfway through token lifetime, but not later than 5 minutes before expiry
     const halfwayPoint = tokenLifetime / 2;
     const fiveMinutes = 5 * 60;
     const refreshPoint = Math.min(halfwayPoint, tokenLifetime - fiveMinutes);
-    
-    const shouldRefresh = tokenAge >= refreshPoint;
-    
-    if (shouldRefresh) {
-      console.log(`Token is ${Math.round(tokenAge / 60)} minutes old (lifetime: ${Math.round(tokenLifetime / 60)} minutes), refreshing at ${Math.round(refreshPoint / 60)} minute mark`);
-    }
 
-    return shouldRefresh;
+    return tokenAge >= refreshPoint;
   } catch (error) {
     console.error('Error checking token expiry:', error);
     return false;
@@ -47,8 +40,6 @@ export function shouldRefreshToken(token: string): boolean {
 
 export async function refreshToken(currentToken: string): Promise<string> {
   const endpoint = process.env.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
-  
-  console.log('Refreshing token with endpoint:', endpoint);
 
   const response = await fetch(`${endpoint}/login`, {
     method: 'POST',
@@ -64,6 +55,5 @@ export async function refreshToken(currentToken: string): Promise<string> {
   }
 
   const newToken = await response.text();
-  console.log('New token received');
   return newToken;
 }

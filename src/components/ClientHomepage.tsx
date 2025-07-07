@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import ImageMasonGrid from "@/components/ImageMasonGrid";
 import Search from "@/components/Search";
 import PageNavigation from "@/components/PageNavigation";
@@ -22,7 +22,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
   const [loading, setLoading] = useState(true);
 
   const currPage = searchParams?.page || "1";
-  const terms = searchParams?.query?.split(',');
+  const terms = useMemo(() => searchParams?.query?.split(','), [searchParams?.query]);
 
   useEffect(() => {
     async function fetchData() {

@@ -57,9 +57,7 @@ export default function UploadPage() {
 
       // 1. Start upload session
       const CHUNK_SIZE = 1024 * 1024 // 1MB
-      console.log('Starting upload session...', { size: file.size, type: file.type })
       const session = await startUploadSession(file.size, file.type, CHUNK_SIZE)
-      console.log('Session started:', session)
 
       // 2. Upload chunks using server-controlled indexing
       let chunkIndex = 0
@@ -68,23 +66,21 @@ export default function UploadPage() {
       while (bytesUploaded < file.size) {
         const start = bytesUploaded
         const end = Math.min(start + session.chunk_size, file.size)
-        
+
         const chunk = file.slice(start, end)
         const arrayBuffer = await chunk.arrayBuffer()
         const uint8Array = new Uint8Array(arrayBuffer)
-        
+
         // Convert to base64 without spreading (avoids stack overflow)
         let binaryString = ''
         for (let i = 0; i < uint8Array.length; i++) {
           binaryString += String.fromCharCode(uint8Array[i])
         }
         const base64Data = btoa(binaryString)
-        
+
         // upload chunk
-        console.log('Uploading chunk:', { chunkIndex, size: arrayBuffer.byteLength })
         const chunkResult = await uploadChunk(session.upload_id, chunkIndex, base64Data)
-        console.log('Chunk result:', chunkResult)
-        
+
         // Check for upload error
         if (chunkResult.status === 2) { // UPLOAD_ERROR = 2
           throw new Error(chunkResult.error_message || 'Upload failed')
@@ -103,7 +99,6 @@ export default function UploadPage() {
         // Check if upload is complete
         if (chunkResult.status === 1) { // UPLOAD_COMPLETE = 1
           // When status is COMPLETE, we should call completeUpload to get the final CID
-          console.log('Upload complete, finalizing...')
           const result = await completeUpload(session.upload_id)
           setResultCid(result.cid)
           setUploadStatus('complete')
@@ -112,11 +107,10 @@ export default function UploadPage() {
       }
 
       // 3. Complete upload (this should only run if we exit the loop without UPLOAD_COMPLETE)
-      console.log('Finalizing upload after all chunks...')
       const result = await completeUpload(session.upload_id)
       setResultCid(result.cid)
       setUploadStatus('complete')
-      
+
     } catch (error) {
       setUploadStatus('error')
       console.error('Upload error:', error)

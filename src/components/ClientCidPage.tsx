@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import TagBlock from '@/components/TagBlock';
+import TagEditForm from '@/components/TagEditForm';
 import FileImage from '@/components/FileImage';
 import { buildCidContentUrl, getCidInfo, getCidTags } from '@/lib/hooya-api-client';
 import { FileType } from '@/types';
@@ -15,17 +16,25 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
   const [cidInfo, setCidInfo] = useState<FileType | null>(null);
   const [tags, setTags] = useState<{namespace: string, descriptor: string}[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // check authentication status
+  useEffect(() => {
+    const token = localStorage.getItem('jwt');
+    setIsAuthenticated(!!token);
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      
+
       try {
         const [info, tagData] = await Promise.all([
           getCidInfo(cid),
           getCidTags(cid)
         ]);
-        
+
         setCidInfo(info);
         setTags(tagData);
       } catch (error) {
@@ -68,7 +77,7 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
   const contentUrl = buildCidContentUrl(cid);
 
   const thumbnailElem = (
-    <FileImage 
+    <FileImage
       cid={cid}
       thumbnails={thumbnails || []}
       processingStatus={cidInfo.processing_status}
@@ -88,9 +97,52 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
       <div id="cid-view" className={`orientation-${thumbOrientation}`}>
         <div><h3>Preview</h3>{thumbnailElem}</div>
         <div>
-          { tags.length > 0 &&
+          { (tags.length > 0 || isAuthenticated) &&
           <>
-            <TagBlock tags={tags}/>
+            {editMode ? (
+              <TagEditForm
+                cid={cid}
+                initialTags={tags}
+                onSave={(newTags) => {
+                  setTags(newTags);
+                  setEditMode(false);
+                }}
+                onCancel={() => setEditMode(false)}
+              />
+            ) : (
+              <div>
+                {tags.length > 0 && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span></span>
+                      {isAuthenticated && (
+                        <a
+                          onClick={() => setEditMode(true)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          edit tags
+                        </a>
+                      )}
+                    </div>
+                    <TagBlock tags={tags}/>
+                  </>
+                )}
+                {tags.length === 0 && isAuthenticated && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3>Tags</h3>
+                      <a 
+                        onClick={() => setEditMode(true)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        add tags
+                      </a>
+                    </div>
+                    <p style={{ color: '#666', fontStyle: 'italic' }}>No tags yet</p>
+                  </div>
+                )}
+              </div>
+            )}
           </>
           }
           <h3>File Info</h3>
