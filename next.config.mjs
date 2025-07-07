@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
@@ -14,14 +14,14 @@ const nextConfig = {
         hostname: 'localhost',
         port: '8532',
         pathname: '/cid-content/**',
-      }
+      },
     ],
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: '10mb'
-    }
-  }
+      bodySizeLimit: '10mb',
+    },
+  },
 };
 
 export default nextConfig;

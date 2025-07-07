@@ -19,5 +19,8 @@ export function organizeTagsByNamespace(tags: Tag[]): Map<string, string[]> {
 }
 
 export function capitalizeNamespace(namespace: string): string {
-  return namespace.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  return namespace
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }

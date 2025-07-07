@@ -4,7 +4,11 @@ function getWebProxyUrl() {
   return process.env.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
 }
 
-export async function startUploadSession(size: number, mimetype: string, chunkSize: number) {
+export async function startUploadSession(
+  size: number,
+  mimetype: string,
+  chunkSize: number
+) {
   const endpoint = getWebProxyUrl();
 
   const response = await apiCall(`${endpoint}/start-upload`, {
@@ -15,8 +19,8 @@ export async function startUploadSession(size: number, mimetype: string, chunkSi
     body: JSON.stringify({
       size,
       mimetype,
-      chunk_size: chunkSize
-    })
+      chunk_size: chunkSize,
+    }),
   });
 
   if (!response.ok) {
@@ -27,7 +31,11 @@ export async function startUploadSession(size: number, mimetype: string, chunkSi
   return data;
 }
 
-export async function uploadChunk(uploadId: string, chunkIndex: number, base64Data: string) {
+export async function uploadChunk(
+  uploadId: string,
+  chunkIndex: number,
+  base64Data: string
+) {
   const endpoint = getWebProxyUrl();
 
   // convert base64 back to binary data
@@ -37,10 +45,13 @@ export async function uploadChunk(uploadId: string, chunkIndex: number, base64Da
     uint8Array[i] = binaryString.charCodeAt(i);
   }
 
-  const response = await apiCall(`${endpoint}/upload-chunk/${uploadId}/${chunkIndex}`, {
-    method: 'PUT',
-    body: uint8Array
-  });
+  const response = await apiCall(
+    `${endpoint}/upload-chunk/${uploadId}/${chunkIndex}`,
+    {
+      method: 'PUT',
+      body: uint8Array,
+    }
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to upload chunk: ${response.statusText}`);
@@ -57,12 +68,14 @@ export async function completeUpload(uploadId: string) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-    }
+    },
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Failed to complete upload: ${response.statusText} - ${errorText}`);
+    throw new Error(
+      `Failed to complete upload: ${response.statusText} - ${errorText}`
+    );
   }
 
   const data: CompleteUploadResponse = await response.json();

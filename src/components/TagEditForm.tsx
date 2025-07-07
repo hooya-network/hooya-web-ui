@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSuggestedTags, tagCid } from '@/lib/hooya-api-client';
-import { Autocomplete, TextField, Chip, Button, Box, Typography } from '@mui/material';
+import {
+  Autocomplete,
+  TextField,
+  Chip,
+  Button,
+  Box,
+  Typography,
+} from '@mui/material';
 
 interface Tag {
   namespace: string;
@@ -16,7 +23,12 @@ interface TagEditFormProps {
   onCancel: () => void;
 }
 
-export default function TagEditForm({ cid, initialTags, onSave, onCancel }: TagEditFormProps) {
+export default function TagEditForm({
+  cid,
+  initialTags,
+  onSave,
+  onCancel,
+}: TagEditFormProps) {
   const [tags, setTags] = useState<Tag[]>(initialTags);
   const [newTagInput, setNewTagInput] = useState('');
   const [suggestions, setSuggestions] = useState<>([]);
@@ -34,7 +46,10 @@ export default function TagEditForm({ cid, initialTags, onSave, onCancel }: TagE
   };
 
   const capitalizeNamespace = (namespace: string) => {
-    return namespace.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return namespace
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
 
   const organizedTags = organizeTags(tags);
@@ -43,10 +58,13 @@ export default function TagEditForm({ cid, initialTags, onSave, onCancel }: TagE
   useEffect(() => {
     if (newTagInput.trim()) {
       // build context query: existing tags + current input
-      const existingTagStrings = tags.map(t => `${t.namespace}:${t.descriptor}`);
-      const queryString = existingTagStrings.length > 0 
-        ? `${existingTagStrings.join(',')},${newTagInput}`
-        : newTagInput;
+      const existingTagStrings = tags.map(
+        (t) => `${t.namespace}:${t.descriptor}`
+      );
+      const queryString =
+        existingTagStrings.length > 0
+          ? `${existingTagStrings.join(',')},${newTagInput}`
+          : newTagInput;
 
       getSuggestedTags(queryString)
         .then(setSuggestions)
@@ -74,7 +92,9 @@ export default function TagEditForm({ cid, initialTags, onSave, onCancel }: TagE
     const newTag = { namespace, descriptor };
 
     // check for duplicates
-    if (tags.some(t => t.namespace === namespace && t.descriptor === descriptor)) {
+    if (
+      tags.some((t) => t.namespace === namespace && t.descriptor === descriptor)
+    ) {
       return;
     }
 
@@ -83,7 +103,15 @@ export default function TagEditForm({ cid, initialTags, onSave, onCancel }: TagE
   };
 
   const handleRemoveTag = (tagToRemove: Tag) => {
-    setTags(tags.filter(t => !(t.namespace === tagToRemove.namespace && t.descriptor === tagToRemove.descriptor)));
+    setTags(
+      tags.filter(
+        (t) =>
+          !(
+            t.namespace === tagToRemove.namespace &&
+            t.descriptor === tagToRemove.descriptor
+          )
+      )
+    );
   };
 
   const handleSave = async () => {
@@ -100,15 +128,20 @@ export default function TagEditForm({ cid, initialTags, onSave, onCancel }: TagE
 
   return (
     <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}
+      >
         <Typography variant="h6">Edit Tags</Typography>
         <Box>
-          <Button onClick={onCancel} sx={{ mr: 1 }}>Cancel</Button>
-          <Button 
-            onClick={handleSave} 
-            variant="contained" 
-            disabled={saving}
-          >
+          <Button onClick={onCancel} sx={{ mr: 1 }}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} variant="contained" disabled={saving}>
             {saving ? 'Saving...' : 'Save'}
           </Button>
         </Box>
@@ -122,7 +155,7 @@ export default function TagEditForm({ cid, initialTags, onSave, onCancel }: TagE
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {descriptors.map((descriptor, index) => (
-              <Chip 
+              <Chip
                 key={`${namespace}-${descriptor}-${index}`}
                 label={descriptor}
                 onDelete={() => handleRemoveTag({ namespace, descriptor })}
@@ -138,7 +171,7 @@ export default function TagEditForm({ cid, initialTags, onSave, onCancel }: TagE
       <Box sx={{ mt: 2 }}>
         <Autocomplete
           freeSolo
-          options={suggestions.map(s => `${s.namespace}:${s.descriptor}`)}
+          options={suggestions.map((s) => `${s.namespace}:${s.descriptor}`)}
           value={newTagInput}
           onInputChange={(event, value) => setNewTagInput(value)}
           onChange={(event, value) => {
@@ -162,7 +195,8 @@ export default function TagEditForm({ cid, initialTags, onSave, onCancel }: TagE
           )}
         />
         <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
-          Use namespace:descriptor format (e.g., &quot;artist:username&quot;) or just &quot;descriptor&quot; for general tags
+          Use namespace:descriptor format (e.g., &quot;artist:username&quot;) or
+          just &quot;descriptor&quot; for general tags
         </Typography>
       </Box>
     </Box>

@@ -3,7 +3,10 @@
 import { shouldRefreshToken, refreshToken } from '../utils/auth';
 
 // enhanced fetch with automatic token refresh
-export async function apiCall(url: string, options: RequestInit = {}): Promise<Response> {
+export async function apiCall(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
   let token = localStorage.getItem('jwt');
 
   // check if token needs refresh
@@ -23,7 +26,7 @@ export async function apiCall(url: string, options: RequestInit = {}): Promise<R
   // add authorization header if token exists
   const headers = {
     ...options.headers,
-    ...(token && { 'Authorization': `Bearer ${token}` }),
+    ...(token && { Authorization: `Bearer ${token}` }),
   };
 
   const response = await fetch(url, {

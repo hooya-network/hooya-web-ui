@@ -5,12 +5,17 @@ export function getWebProxyUrl() {
 }
 
 // search and file queries
-export async function searchFiles(terms: string[], tags: string[], mimeTypes: string[], page: string = "1") {
+export async function searchFiles(
+  terms: string[],
+  tags: string[],
+  mimeTypes: string[],
+  page: string = '1'
+) {
   const endpoint = getWebProxyUrl();
 
-  const query = terms.join(",");
+  const query = terms.join(',');
   const response = await apiCall(`${endpoint}/search-files/${query}/${page}`, {
-    cache: 'no-store'
+    cache: 'no-store',
   });
 
   if (!response.ok) {
@@ -20,11 +25,11 @@ export async function searchFiles(terms: string[], tags: string[], mimeTypes: st
   return await response.json();
 }
 
-export async function getRecentFiles(page: string = "1") {
+export async function getRecentFiles(page: string = '1') {
   const endpoint = getWebProxyUrl();
 
   const response = await apiCall(`${endpoint}/all-files/${page}`, {
-    cache: 'no-store'
+    cache: 'no-store',
   });
 
   if (!response.ok) {
@@ -38,7 +43,7 @@ export async function getCidInfo(cid: string) {
   const endpoint = getWebProxyUrl();
 
   const response = await apiCall(`${endpoint}/cid-info/${cid}`, {
-    cache: 'no-store'
+    cache: 'no-store',
   });
 
   if (!response.ok) {
@@ -52,7 +57,7 @@ export async function getCidTags(cid: string) {
   const endpoint = getWebProxyUrl();
 
   const response = await apiCall(`${endpoint}/cid-tags/${cid}`, {
-    cache: 'no-store'
+    cache: 'no-store',
   });
 
   if (!response.ok) {
@@ -66,13 +71,13 @@ export async function getCidTags(cid: string) {
 export async function getSuggestedTags(term?: string) {
   const endpoint = getWebProxyUrl();
 
-  let queryPath = "/suggest-tag";
+  let queryPath = '/suggest-tag';
   if (term) {
     queryPath = `/suggest-tag/${term}`;
   }
 
   const response = await apiCall(`${endpoint}${queryPath}`, {
-    cache: 'no-store'
+    cache: 'no-store',
   });
 
   if (!response.ok) {
@@ -80,17 +85,20 @@ export async function getSuggestedTags(term?: string) {
   }
 
   const data = await response.json();
-  return data.tag_suggestion?.sort((a: {count: number}, b: {count: number}) => b.count - a.count)
-    .map((tag: {namespace: string, descriptor: string}) => 
-      tag.namespace ? `${tag.namespace}:${tag.descriptor}` : tag.descriptor
-    ) || [];
+  return (
+    data.tag_suggestion
+      ?.sort((a: { count: number }, b: { count: number }) => b.count - a.count)
+      .map((tag: { namespace: string; descriptor: string }) =>
+        tag.namespace ? `${tag.namespace}:${tag.descriptor}` : tag.descriptor
+      ) || []
+  );
 }
 
-export async function getAllTags(page: string = "1") {
+export async function getAllTags(page: string = '1') {
   const endpoint = getWebProxyUrl();
 
   const response = await apiCall(`${endpoint}/all-tags/${page}`, {
-    cache: 'no-store'
+    cache: 'no-store',
   });
 
   if (!response.ok) {
@@ -100,7 +108,10 @@ export async function getAllTags(page: string = "1") {
   return await response.json();
 }
 
-export async function tagCid(cid: string, tags: {namespace: string, descriptor: string}[]) {
+export async function tagCid(
+  cid: string,
+  tags: { namespace: string; descriptor: string }[]
+) {
   const endpoint = getWebProxyUrl();
 
   const formData = new URLSearchParams();
@@ -114,7 +125,7 @@ export async function tagCid(cid: string, tags: {namespace: string, descriptor: 
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: formData.toString()
+    body: formData.toString(),
   });
 
   if (!response.ok) {
@@ -136,7 +147,7 @@ export async function loginUser(password: string) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: formData.toString()
+    body: formData.toString(),
   });
 
   if (!response.ok) {

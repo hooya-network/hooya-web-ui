@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { loginUser } from "@/lib/hooya-api-client";
-import { useState } from "react";
+import { loginUser } from '@/lib/hooya-api-client';
+import { useState } from 'react';
 
 export default function Page() {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage("");
+    setMessage('');
 
     const formData = new FormData(e.currentTarget);
-    const password = formData.get("password") as string;
+    const password = formData.get('password') as string;
 
     try {
       await loginUser(password);
-      setMessage("Login successful!");
-      window.location.href = "/";
+      setMessage('Login successful!');
+      window.location.href = '/';
     } catch (error) {
-      setMessage("Login failed");
+      setMessage('Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -33,15 +33,10 @@ export default function Page() {
         <form onSubmit={handleSubmit}>
           <label htmlFor="password">Operator password</label>
           <br />
-          <input
-            type="password"
-            name="password"
-            id="password"
-            required
-          />
+          <input type="password" name="password" id="password" required />
           <br />
           <button type="submit" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Go"}
+            {isLoading ? 'Logging in...' : 'Go'}
           </button>
         </form>
         {message && <p>{message}</p>}
@@ -49,4 +44,3 @@ export default function Page() {
     </>
   );
 }
-

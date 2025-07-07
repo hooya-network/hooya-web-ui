@@ -39,7 +39,8 @@ export function shouldRefreshToken(token: string): boolean {
 }
 
 export async function refreshToken(currentToken: string): Promise<string> {
-  const endpoint = process.env.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
+  const endpoint =
+    process.env.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
 
   const response = await fetch(`${endpoint}/login`, {
     method: 'POST',
@@ -50,7 +51,11 @@ export async function refreshToken(currentToken: string): Promise<string> {
   });
 
   if (!response.ok) {
-    console.error('Token refresh failed:', response.status, response.statusText);
+    console.error(
+      'Token refresh failed:',
+      response.status,
+      response.statusText
+    );
     throw new Error(`Token refresh failed: ${response.statusText}`);
   }
 
