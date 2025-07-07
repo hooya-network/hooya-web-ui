@@ -121,7 +121,7 @@ export async function tagCid(
   });
 
   const response = await apiCall(`${endpoint}/tag-cid/${cid}`, {
-    method: 'POST',
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
@@ -133,6 +133,33 @@ export async function tagCid(
   }
 
   return response.status === 201;
+}
+
+export async function untagCid(
+  cid: string,
+  tags: { namespace: string; descriptor: string }[]
+) {
+  const endpoint = getWebProxyUrl();
+
+  const formData = new URLSearchParams();
+  tags.forEach((tag, index) => {
+    formData.append(`tags[${index}][namespace]`, tag.namespace);
+    formData.append(`tags[${index}][descriptor]`, tag.descriptor);
+  });
+
+  const response = await apiCall(`${endpoint}/tag-cid/${cid}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to untag CID: ${response.statusText}`);
+  }
+
+  return response.status === 204;
 }
 
 // authentication

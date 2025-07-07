@@ -113,7 +113,11 @@ export default function FileImage({
   const renderImage = () => {
     // show thumbnail if available
     if (currentThumbnails.length > 0) {
-      const thumbnail = currentThumbnails[0]; // use first available thumbnail
+      const thumbnailIndex =
+        (size === 'medium' || size === 'large') && currentThumbnails.length > 1
+          ? 1
+          : 0;
+      const thumbnail = currentThumbnails[thumbnailIndex];
       if (thumbnail?.mimetype?.startsWith('image')) {
         const imgElement = (
           <Image

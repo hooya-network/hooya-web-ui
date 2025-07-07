@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getSuggestedTags, tagCid } from '@/lib/hooya-api-client';
+import { getSuggestedTags, tagCid, untagCid } from '@/lib/hooya-api-client';
 import {
   Autocomplete,
   TextField,
@@ -117,7 +117,28 @@ export default function TagEditForm({
   const handleSave = async () => {
     setSaving(true);
     try {
-      await tagCid(cid, tags);
+      // Calculate added and removed tags
+      const initialTagSet = new Set(
+        initialTags.map((t) => `${t.namespace}:${t.descriptor}`)
+      );
+      const currentTagSet = new Set(
+        tags.map((t) => `${t.namespace}:${t.descriptor}`)
+      );
+
+      const addedTags = tags.filter(
+        (t) => !initialTagSet.has(`${t.namespace}:${t.descriptor}`)
+      );
+      const removedTags = initialTags.filter(
+        (t) => !currentTagSet.has(`${t.namespace}:${t.descriptor}`)
+      );
+
+      if (addedTags.length > 0) {
+        await tagCid(cid, addedTags);
+      }
+      if (removedTags.length > 0) {
+        await untagCid(cid, removedTags);
+      }
+
       onSave(tags);
     } catch (error) {
       console.error('Failed to save tags:', error);
