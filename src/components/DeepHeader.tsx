@@ -19,9 +19,13 @@ export default function DeepHeader() {
         <li>
           <Link href="/tags">Tags</Link>
         </li>
-        <li>
-          <Link href="/upload">Upload</Link>
-        </li>
+        {jwt && (
+          <>
+            <li>
+              <Link href="/upload">Upload</Link>
+            </li>
+          </>
+        )}
         <li>
           <Link href="/about">About</Link>
         </li>

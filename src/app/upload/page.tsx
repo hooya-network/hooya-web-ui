@@ -16,36 +16,60 @@ type UploadProgress = {
   currentChunk: number;
 };
 
-export default function UploadPage() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({
-    bytesUploaded: 0,
-    totalBytes: 0,
-    currentChunk: 0,
-  });
+type QueuedFile = {
+  id: string;
+  file: File;
+  name: string;
+  size: number;
+  type: string;
+  status: 'ready' | 'uploading' | 'complete' | 'error';
+  progress: number;
+  error?: string;
+  uploadId?: string;
+  cid?: string;
+};
 
-  const [resultCid, setResultCid] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string>('');
+export default function UploadPage() {
+  const [queuedFiles, setQueuedFiles] = useState<QueuedFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  const handleFileSelect = (file: File) => {
-    setSelectedFile(file);
-    setUploadStatus('idle');
-    setResultCid(null);
-    setErrorMessage('');
-    setUploadProgress({
-      bytesUploaded: 0,
-      totalBytes: file.size,
-      currentChunk: 0,
-    });
+  const addFiles = (files: File[]) => {
+    const newFiles: QueuedFile[] = files.map((file) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      status: 'ready',
+      progress: 0,
+    }));
+    setQueuedFiles((prev) => [...prev, ...newFiles]);
+  };
+
+  const removeFile = (id: string) => {
+    setQueuedFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  const updateFileStatus = (
+    id: string,
+    status: QueuedFile['status'],
+    progress: number = 0,
+    error?: string,
+    cid?: string
+  ) => {
+    setQueuedFiles((prev) =>
+      prev.map((f) =>
+        f.id === id ? { ...f, status, progress, error, cid } : f
+      )
+    );
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFileSelect(file);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) addFiles(files);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -58,16 +82,15 @@ export default function UploadPage() {
     setIsDragOver(false);
   };
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (queuedFile: QueuedFile) => {
     try {
-      setUploadStatus('uploading');
-      setErrorMessage('');
+      updateFileStatus(queuedFile.id, 'uploading', 0);
 
       // 1. Start upload session
       const CHUNK_SIZE = 1024 * 1024; // 1MB
       const session = await startUploadSession(
-        file.size,
-        file.type,
+        queuedFile.file.size,
+        queuedFile.file.type,
         CHUNK_SIZE
       );
 
@@ -75,11 +98,11 @@ export default function UploadPage() {
       let chunkIndex = 0;
       let bytesUploaded = 0;
 
-      while (bytesUploaded < file.size) {
+      while (bytesUploaded < queuedFile.file.size) {
         const start = bytesUploaded;
-        const end = Math.min(start + session.chunk_size, file.size);
+        const end = Math.min(start + session.chunk_size, queuedFile.file.size);
 
-        const chunk = file.slice(start, end);
+        const chunk = queuedFile.file.slice(start, end);
         const arrayBuffer = await chunk.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
 
@@ -107,40 +130,57 @@ export default function UploadPage() {
         bytesUploaded = chunkResult.bytes_received;
         chunkIndex = chunkResult.next_chunk_index;
 
-        setUploadProgress({
-          bytesUploaded: chunkResult.bytes_received,
-          totalBytes: file.size,
-          currentChunk: chunkIndex,
-        });
+        const progress = Math.round(
+          (bytesUploaded / queuedFile.file.size) * 100
+        );
+        updateFileStatus(queuedFile.id, 'uploading', progress);
 
         // Check if upload is complete
         if (chunkResult.status === 1) {
           // UPLOAD_COMPLETE = 1
           // When status is COMPLETE, we should call completeUpload to get the final CID
           const result = await completeUpload(session.upload_id);
-          setResultCid(result.cid);
-          setUploadStatus('complete');
+          updateFileStatus(
+            queuedFile.id,
+            'complete',
+            100,
+            undefined,
+            result.cid
+          );
           return; // Exit the function here
         }
       }
 
       // 3. Complete upload (this should only run if we exit the loop without UPLOAD_COMPLETE)
       const result = await completeUpload(session.upload_id);
-      setResultCid(result.cid);
-      setUploadStatus('complete');
+      updateFileStatus(queuedFile.id, 'complete', 100, undefined, result.cid);
     } catch (error) {
-      setUploadStatus('error');
       console.error('Upload error:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Upload failed');
+      updateFileStatus(
+        queuedFile.id,
+        'error',
+        0,
+        error instanceof Error ? error.message : 'Upload failed'
+      );
     }
   };
 
-  const progressPercentage =
-    uploadProgress.totalBytes > 0
-      ? Math.round(
-          (uploadProgress.bytesUploaded / uploadProgress.totalBytes) * 100
-        )
-      : 0;
+  const uploadAllFiles = async () => {
+    setIsUploading(true);
+    const filesToUpload = queuedFiles.filter(
+      (f) => f.status === 'ready' || f.status === 'error'
+    );
+
+    for (const file of filesToUpload) {
+      await uploadFile(file);
+    }
+
+    setIsUploading(false);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  };
 
   return (
     <main>
@@ -159,89 +199,117 @@ export default function UploadPage() {
           onClick={() => document.getElementById('file-input')?.click()}
         >
           <p>
-            {selectedFile
-              ? selectedFile.name
-              : 'Drag & drop a file here, or click to select'}
+            {queuedFiles.length > 0
+              ? `${queuedFiles.length} file(s) selected`
+              : 'Drag & drop files here, or click to select'}
           </p>
           <input
             id="file-input"
             type="file"
             className="upload-file-input"
+            multiple
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleFileSelect(file);
+              const files = Array.from(e.target.files || []);
+              if (files.length > 0) addFiles(files);
             }}
           />
         </div>
 
-        {/* File Info */}
-        {selectedFile && (
-          <div className="upload-file-info">
-            <p>
-              <strong>File:</strong> {selectedFile.name}
-            </p>
-            <p>
-              <strong>Size:</strong>{' '}
-              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-            </p>
-            <p>
-              <strong>Type:</strong> {selectedFile.type}
-            </p>
-          </div>
-        )}
+        {/* Upload Queue */}
+        {queuedFiles.length > 0 && (
+          <div className="upload-queue">
+            <h3>Upload Queue</h3>
+            {queuedFiles.map((queuedFile) => (
+              <div key={queuedFile.id} className="upload-queue-item">
+                <div className="file-name">
+                  <button
+                    onClick={() => removeFile(queuedFile.id)}
+                    disabled={queuedFile.status === 'uploading'}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'inherit',
+                      cursor: 'pointer',
+                      padding: '0.2ch 0.5ch',
+                      marginRight: '0.5ch',
+                    }}
+                    title="Remove tag"
+                  >
+                    ×
+                  </button>
+                  {queuedFile.name}
+                </div>
+                <div className="file-info flat-list">
+                  <dl>
+                    <dt>Size</dt>&nbsp;
+                    <dd>{formatFileSize(queuedFile.size)}</dd>
+                    <br />
+                    <dt>Mimetype</dt>&nbsp;<dd>{queuedFile.type}</dd>
+                    <br />
+                    <dt>Status</dt>&nbsp;
+                    <dd>
+                      {queuedFile.status === 'ready' && 'Ready'}
+                      {queuedFile.status === 'uploading' &&
+                        `Uploading... ${queuedFile.progress}%`}
+                      {queuedFile.status === 'complete' && 'Complete'}
+                      {queuedFile.status === 'error' &&
+                        ` Error: ${queuedFile.error}`}
+                    </dd>
+                  </dl>
+                </div>
+                {queuedFile.status === 'uploading' && (
+                  <div className="upload-progress">
+                    [
+                    {Array(Math.floor(queuedFile.progress / 5))
+                      .fill('█')
+                      .join('')}
+                    {Array(20 - Math.floor(queuedFile.progress / 5))
+                      .fill('░')
+                      .join('')}
+                    ] {queuedFile.progress}%
+                  </div>
+                )}
+                {queuedFile.status === 'complete' && queuedFile.cid && (
+                  <div className="file-info flat-list">
+                    <dl>
+                      <dt>? CID</dt>&nbsp;
+                      <dd>
+                        <Link href={`/cid/${queuedFile.cid}`}>
+                          {queuedFile.cid}&nbsp;→
+                        </Link>
+                      </dd>
+                    </dl>
+                  </div>
+                )}
+                <div className="upload-queue-actions"></div>
+              </div>
+            ))}
 
-        {/* Upload Button */}
-        {selectedFile && uploadStatus === 'idle' && (
-          <button
-            className="upload-button"
-            onClick={() => uploadFile(selectedFile)}
-          >
-            Upload File
-          </button>
-        )}
-
-        {/* Progress Bar */}
-        {uploadStatus === 'uploading' && (
-          <div className="upload-progress">
-            <div className="upload-progress-info">
-              <span>Uploading... {progressPercentage}%</span>
-              <span>Chunk {uploadProgress.currentChunk}</span>
-            </div>
-            <div className="upload-progress-bar">
-              <div
-                className="upload-progress-fill"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Success */}
-        {uploadStatus === 'complete' && resultCid && (
-          <div className="upload-success">
-            <p>
-              <strong>Upload Complete!</strong>
-            </p>
-            <p>
-              File CID: <code>{resultCid}</code>
-            </p>
-            <Link href={`/cid/${resultCid}`}>View uploaded file →</Link>
-          </div>
-        )}
-
-        {/* Error */}
-        {uploadStatus === 'error' && (
-          <div className="upload-error">
-            <p>
-              <strong>Upload Failed</strong>
-            </p>
-            <p>{errorMessage}</p>
-            <button
-              className="upload-retry-button"
-              onClick={() => setUploadStatus('idle')}
-            >
-              Try Again
-            </button>
+            <ul className="slash-flat-list">
+              <li>
+                <button
+                  className="simple-button"
+                  onClick={() => document.getElementById('file-input')?.click()}
+                  disabled={isUploading}
+                >
+                  add more files
+                </button>
+              </li>
+              <li>
+                <button
+                  className="simple-button"
+                  onClick={uploadAllFiles}
+                  disabled={
+                    isUploading ||
+                    queuedFiles.every((f) => f.status === 'complete')
+                  }
+                >
+                  {isUploading
+                    ? 'uploading...'
+                    : `upload all (${queuedFiles.filter((f) => f.status === 'ready' || f.status === 'error').length})`}
+                </button>
+              </li>
+            </ul>
           </div>
         )}
       </div>

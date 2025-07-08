@@ -2,14 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSuggestedTags, tagCid, untagCid } from '@/lib/hooya-api-client';
-import {
-  Autocomplete,
-  TextField,
-  Chip,
-  Button,
-  Box,
-  Typography,
-} from '@mui/material';
 
 interface Tag {
   namespace: string;
@@ -31,10 +23,11 @@ export default function TagEditForm({
 }: TagEditFormProps) {
   const [tags, setTags] = useState<Tag[]>(initialTags);
   const [newTagInput, setNewTagInput] = useState('');
-  const [suggestions, setSuggestions] = useState<>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // organize tags by namespace (reusing TagBlock logic)
+  // organize tags by namespace
   const organizeTags = (tagList: Tag[]) => {
     let organizizedTags = new Map<string, string[]>();
     tagList.forEach((t) => {
@@ -57,22 +50,24 @@ export default function TagEditForm({
   // fetch suggestions when input changes
   useEffect(() => {
     if (newTagInput.trim()) {
-      // build context query: existing tags + current input
-      const existingTagStrings = tags.map(
-        (t) => `${t.namespace}:${t.descriptor}`
-      );
-      const queryString =
-        existingTagStrings.length > 0
-          ? `${existingTagStrings.join(',')},${newTagInput}`
-          : newTagInput;
-
-      getSuggestedTags(queryString)
-        .then(setSuggestions)
+      getSuggestedTags(newTagInput)
+        .then((suggestions) => {
+          // Parse the returned strings into objects
+          const parsedSuggestions = suggestions.map((suggestion: string) => {
+            if (suggestion.includes(':')) {
+              const [namespace, descriptor] = suggestion.split(':', 2);
+              return { namespace, descriptor };
+            } else {
+              return { namespace: 'general', descriptor: suggestion };
+            }
+          });
+          setSuggestions(parsedSuggestions);
+        })
         .catch(() => setSuggestions([]));
     } else {
       setSuggestions([]);
     }
-  }, [newTagInput, tags]);
+  }, [newTagInput]);
 
   const handleAddTag = (tagString: string) => {
     if (!tagString.trim()) return;
@@ -85,6 +80,8 @@ export default function TagEditForm({
       const [ns, desc] = tagString.split(':', 2);
       namespace = ns.trim();
       descriptor = desc.trim();
+    } else {
+      namespace = 'general';
     }
 
     if (!descriptor) return;
@@ -148,78 +145,130 @@ export default function TagEditForm({
   };
 
   return (
-    <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
-      <Box
-        sx={{
+    <div style={{ border: '1px solid', padding: '1ch', margin: '1ch 0' }}>
+      {/* Header with title and action buttons */}
+      <div
+        style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: 2,
+          marginBottom: '1ch',
         }}
       >
-        <Typography variant="h6">Edit Tags</Typography>
-        <Box>
-          <Button onClick={onCancel} sx={{ mr: 1 }}>
+        <h3 style={{ margin: 0 }}>Edit Tags</h3>
+        <div>
+          <button onClick={onCancel} style={{ marginRight: '1ch' }}>
             Cancel
-          </Button>
-          <Button onClick={handleSave} variant="contained" disabled={saving}>
+          </button>
+          <button onClick={handleSave} disabled={saving}>
             {saving ? 'Saving...' : 'Save'}
-          </Button>
-        </Box>
-      </Box>
+          </button>
+        </div>
+      </div>
 
-      {/* existing tags organized by namespace */}
-      {Array.from(organizedTags).map(([namespace, descriptors]) => (
-        <Box key={`tag-namespace-${namespace}`} sx={{ mb: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-            {capitalizeNamespace(namespace)}
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {descriptors.map((descriptor, index) => (
-              <Chip
-                key={`${namespace}-${descriptor}-${index}`}
-                label={descriptor}
-                onDelete={() => handleRemoveTag({ namespace, descriptor })}
-                variant="outlined"
-                className={`tag-namespace-${namespace}`}
-              />
-            ))}
-          </Box>
-        </Box>
-      ))}
+      {/* Existing tags organized by namespace using tag-block styling */}
+      <div className="tag-block">
+        {Array.from(organizedTags).map(([namespace, descriptors]) => (
+          <div key={`tag-namespace-${namespace}`}>
+            <h3>{capitalizeNamespace(namespace)}</h3>
+            <div className={`tag-namespace-${namespace}`}>
+              {descriptors.map((descriptor, index) => (
+                <span
+                  key={`${namespace}-${descriptor}-${index}`}
+                  className="tag-descriptor"
+                >
+                  <button
+                    onClick={() => handleRemoveTag({ namespace, descriptor })}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'inherit',
+                      cursor: 'pointer',
+                      padding: '0.2ch 0.5ch',
+                      marginRight: '0.5ch',
+                    }}
+                    title="Remove tag"
+                  >
+                    ×
+                  </button>
+                  {descriptor}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
-      {/* add new tag input */}
-      <Box sx={{ mt: 2 }}>
-        <Autocomplete
-          freeSolo
-          options={suggestions.map((s) => `${s.namespace}:${s.descriptor}`)}
+      {/* Add new tag input */}
+      <div style={{ marginTop: '1ch', position: 'relative' }}>
+        <input
+          type="text"
           value={newTagInput}
-          onInputChange={(event, value) => setNewTagInput(value)}
-          onChange={(event, value) => {
-            if (value) {
-              handleAddTag(value);
+          onChange={(e) => setNewTagInput(e.target.value)}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              handleAddTag(newTagInput);
             }
           }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Add tag (namespace:descriptor)"
-              variant="outlined"
-              size="small"
-              placeholder="e.g., artist:username or general:landscape"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddTag(newTagInput);
-                }
-              }}
-            />
-          )}
+          placeholder="Add tag (namespace:descriptor or just descriptor)"
+          style={{
+            width: '100%',
+            padding: '0.5ch',
+            fontSize: '1rem',
+            border: '1px solid',
+            boxSizing: 'border-box',
+          }}
         />
-        <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
-          Use namespace:descriptor format (e.g., &quot;artist:username&quot;) or
-          just &quot;descriptor&quot; for general tags
-        </Typography>
-      </Box>
-    </Box>
+
+        {/* Suggestions dropdown */}
+        {showSuggestions && suggestions.length > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              background: 'white',
+              border: '1px solid',
+              borderTop: 'none',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              zIndex: 1000,
+            }}
+          >
+            {suggestions.map((suggestion, index) => (
+              <div
+                key={index}
+                onClick={() =>
+                  handleAddTag(
+                    `${suggestion.namespace}:${suggestion.descriptor}`
+                  )
+                }
+                style={{
+                  padding: '0.5ch',
+                  cursor: 'pointer',
+                  borderBottom: '1px solid #eee',
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.backgroundColor = '#f0f0f0')
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = 'white')
+                }
+              >
+                {suggestion.namespace}:{suggestion.descriptor}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p style={{ margin: '0.5ch 0 0 0', fontSize: '0.9rem', color: '#666' }}>
+          Use namespace:descriptor format (e.g., "artist:username") or just
+          "descriptor" for general tags
+        </p>
+      </div>
+    </div>
   );
 }

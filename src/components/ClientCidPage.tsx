@@ -78,8 +78,13 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
   const thumbnail = thumbnails?.[1] || thumbnails?.[0];
 
   // More accomodating layout for images wider than a 4:3 ratio
-  const thumbOrientation =
-    thumbnail?.aspect_ratio < 4 / 3 ? 'portrait' : 'landscape';
+  const fileOrientation = extFile
+    ? extFile.aspect_ratio < 4 / 3
+      ? 'portrait'
+      : 'landscape'
+    : thumbnail?.aspect_ratio < 4 / 3
+      ? 'portrait'
+      : 'landscape';
 
   const contentUrl = buildCidContentUrl(cid);
 
@@ -105,7 +110,10 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
         </li>
         <li key="mimetype">{mimetype}</li>
       </ul>
-      <div id="cid-view" className={`orientation-${thumbOrientation}`}>
+      <div
+        id="cid-view"
+        className={`orientation-${fileOrientation || thumbOrientation}`}
+      >
         <div>
           <h3>Preview</h3>
           {thumbnailElem}
