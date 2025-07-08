@@ -114,18 +114,21 @@ export async function tagCid(
 ) {
   const endpoint = getWebProxyUrl();
 
-  const formData = new URLSearchParams();
-  tags.forEach((tag, index) => {
-    formData.append(`tags[${index}][namespace]`, tag.namespace);
-    formData.append(`tags[${index}][descriptor]`, tag.descriptor);
-  });
+  const body = tags
+    .map(
+      (tag, index) =>
+        `tags[${encodeURIComponent(index)}][namespace]=${encodeURIComponent(tag.namespace)}` +
+        `&tags[${encodeURIComponent(index)}][descriptor]=${encodeURIComponent(tag.descriptor)}`
+    )
+    .join('&');
 
+  console.log(body);
   const response = await apiCall(`${endpoint}/tag-cid/${cid}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: formData.toString(),
+    body,
   });
 
   if (!response.ok) {
@@ -141,18 +144,20 @@ export async function untagCid(
 ) {
   const endpoint = getWebProxyUrl();
 
-  const formData = new URLSearchParams();
-  tags.forEach((tag, index) => {
-    formData.append(`tags[${index}][namespace]`, tag.namespace);
-    formData.append(`tags[${index}][descriptor]`, tag.descriptor);
-  });
+  const body = tags
+    .map(
+      (tag, index) =>
+        `tags[${encodeURIComponent(index)}][namespace]=${encodeURIComponent(tag.namespace)}` +
+        `&tags[${encodeURIComponent(index)}][descriptor]=${encodeURIComponent(tag.descriptor)}`
+    )
+    .join('&');
 
   const response = await apiCall(`${endpoint}/tag-cid/${cid}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: formData.toString(),
+    body,
   });
 
   if (!response.ok) {
