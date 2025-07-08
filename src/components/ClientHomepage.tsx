@@ -11,6 +11,7 @@ import {
   getSuggestedTags,
 } from '@/lib/hooya-api-client';
 import { FileType } from '@/types';
+import { useSystemInfo } from '@/contexts/SystemInfoContext';
 
 interface ClientHomepageProps {
   searchParams: { [key: string]: string | undefined };
@@ -24,6 +25,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
   });
   const [initSuggest, setInitSuggest] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const { systemInfo } = useSystemInfo();
 
   const currPage = searchParams?.page || '1';
   const terms = useMemo(
@@ -96,14 +98,22 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     <main>
       <div id="home-search">
         <h1>HooYa!</h1>
-        <div className="subtext">Browsing &quot;Public Demo&quot; instance</div>
-        <div className="subtext">Peer ID 0xC262a…a048</div>
+        <div className="subtext">
+          Browsing &quot;{systemInfo?.instance_name || 'Loading...'}&quot;
+          instance
+        </div>
+        <div className="subtext">
+          Peer ID {systemInfo?.short_id || 'Loading...'}
+        </div>
         <Search page={currPage} initSuggest={initSuggest} />
         <div className="subtext">
-          hooyad v0.1.0-alpha-5 / hooya-web-ui v0.1.0-alpha-5 / Operated by
-          wesl-ee
+          {systemInfo?.daemon_version?.version_string || 'Loading...'} /{' '}
+          {systemInfo?.webui_version?.version_string || 'Loading...'} / Operated
+          by {systemInfo?.operator_name || 'Loading...'}
           <br />
-          9000+ files indexed / 1000+ associations / 100+ tags
+          {systemInfo?.stats
+            ? `${systemInfo.stats.files_indexed}+ files indexed / ${systemInfo.stats.associations_count}+ associations / ${systemInfo.stats.tags_count}+ tags`
+            : 'Loading statistics...'}
         </div>
       </div>
       {pages && (

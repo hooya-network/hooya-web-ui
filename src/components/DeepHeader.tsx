@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useSystemInfo } from '../contexts/SystemInfoContext';
 
 export default function DeepHeader() {
   const [jwt, setJwt] = useState<string | null>(null);
+  const { systemInfo } = useSystemInfo();
 
   useEffect(() => {
     setJwt(localStorage.getItem('jwt'));
@@ -50,7 +52,8 @@ export default function DeepHeader() {
         )}
       </ul>
       <span id="header-title">
-        Browsing HooYa! — “Public Demo” instance (0xC262a…a048)
+        Browsing HooYa! — “{systemInfo?.instance_name || 'Loading...'}” instance
+        ({systemInfo?.short_id || 'Loading...'})
       </span>
     </header>
   );

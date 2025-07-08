@@ -33,6 +33,7 @@ footer > * {
 #header-links {
   font-size: 1.2rem;
   margin: 0;
+  padding-right: 2ch;
 }
 
 #header-title {

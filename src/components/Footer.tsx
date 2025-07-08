@@ -1,10 +1,16 @@
+'use client';
+
+import { useSystemInfo } from '@/contexts/SystemInfoContext';
+
 export default function Footer() {
+  const { systemInfo } = useSystemInfo();
+
   return (
     <footer id="page-footer">
       <ul className="slash-flat-list">
-        <li>hooyad v0.1.0-alpha-5</li>
-        <li>hooya-web-ui v0.1.0-alpha-5</li>
-        <li>Operated by wesl-ee</li>
+        <li>{systemInfo?.daemon_version?.version_string || 'Loading...'}</li>
+        <li>{systemInfo?.webui_version?.version_string || 'Loading...'}</li>
+        <li>Operated by {systemInfo?.operator_name || 'Loading...'}</li>
       </ul>
       <ul className="emdash-flat-list">
         <li>
