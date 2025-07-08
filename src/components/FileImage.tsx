@@ -118,18 +118,22 @@ export default function FileImage({
           ? 1
           : 0;
       const thumbnail = currentThumbnails[thumbnailIndex];
+
       if (thumbnail?.mimetype?.startsWith('image')) {
         const imgElement = (
-          <Image
-            height={thumbnail.height}
-            width={thumbnail.width}
-            className={className}
-            src={ConstructCIDThumbnailURL(
-              thumbnail.source_cid,
-              typeof size === 'number' ? size.toString() : size
-            )}
-            alt=""
-          />
+          <div className="file-preview-container">
+            <Image
+              height={thumbnail.height}
+              width={thumbnail.width}
+              className={className}
+              src={ConstructCIDThumbnailURL(
+                thumbnail.source_cid,
+                typeof size === 'number' ? size.toString() : size
+              )}
+              alt=""
+            />
+            <div className="mimetype-indicator">{thumbnail.mimetype}</div>
+          </div>
         );
 
         return clickable ? (
@@ -139,22 +143,29 @@ export default function FileImage({
         );
       } else if (thumbnail?.mimetype?.startsWith('video')) {
         const videoElement = (
-          <video
-            autoPlay
-            loop
-            muted
-            height={thumbnail.height}
-            width={thumbnail.width}
-            className={className}
-          >
-            <source
-              src={ConstructCIDThumbnailURL(
-                thumbnail.source_cid,
-                typeof size === 'number' ? size.toString() : size
-              )}
-              type={thumbnail.mimetype}
-            />
-          </video>
+          <div className="file-preview-container">
+            <video
+              loop
+              muted
+              height={thumbnail.height}
+              width={thumbnail.width}
+              className={className}
+              onMouseEnter={(e) => e.currentTarget.play()}
+              onMouseLeave={(e) => {
+                e.currentTarget.pause();
+                e.currentTarget.currentTime = 0;
+              }}
+            >
+              <source
+                src={ConstructCIDThumbnailURL(
+                  thumbnail.source_cid,
+                  typeof size === 'number' ? size.toString() : size
+                )}
+                type={thumbnail.mimetype}
+              />
+            </video>
+            <div className="mimetype-indicator">{thumbnail.mimetype}</div>
+          </div>
         );
 
         return clickable ? (
@@ -165,28 +176,41 @@ export default function FileImage({
       }
     }
 
-    // show processing gif if currently processing
     if (currentStatus === 1) {
-      return (
-        <Image
-          height={500}
-          width={500}
-          className={`${className} processing-thumbnail`}
-          src="/processing.gif"
-          alt="Processing..."
-        />
+      const processingElement = (
+        <div className="file-preview-container">
+          <Image
+            height={200}
+            width={200}
+            className={`${className} processing-thumbnail`}
+            src="/processing.gif"
+            alt="Processing..."
+          />
+          <div className="mimetype-indicator">processing...</div>
+        </div>
+      );
+
+      return clickable ? (
+        <Link href={contentUrl}>{processingElement}</Link>
+      ) : (
+        processingElement
       );
     }
 
     // fallback to no-thumb.gif (for finished with no thumbs, failed, etc)
     const imgElement = (
-      <Image
-        height={500}
-        width={500}
-        className={className}
-        src="/no-thumb.gif"
-        alt="No thumbnail available"
-      />
+      <div className="file-preview-container">
+        <Image
+          height={200}
+          width={200}
+          className={className}
+          src="/no-thumb.gif"
+          alt="No thumbnail available"
+        />
+        <div className="mimetype-indicator">
+          {currentStatus === 2 ? 'failed' : 'no preview'}
+        </div>
+      </div>
     );
 
     return clickable ? <Link href={contentUrl}>{imgElement}</Link> : imgElement;

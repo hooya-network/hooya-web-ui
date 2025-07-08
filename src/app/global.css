@@ -36,6 +36,11 @@ footer > * {
   padding-right: 2ch;
 }
 
+.file-preview-container {
+  position: relative;
+  display: inline-block;
+}
+
 #header-title {
 }
 
@@ -498,4 +503,15 @@ a:hover {
 .processing-thumbnail:hover {
   opacity: 1;
   filter: brightness(1);
+}
+
+.mimetype-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  line-height: normal;
 }
