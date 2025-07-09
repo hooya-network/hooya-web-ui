@@ -182,6 +182,10 @@ export default function UploadPage() {
     return (bytes / 1024 / 1024).toFixed(2) + ' MB';
   };
 
+  const clearFinished = () => {
+    setQueuedFiles((prev) => prev.filter((f) => f.status !== 'complete'));
+  };
+
   return (
     <main>
       <div id="home-search">
@@ -219,6 +223,68 @@ export default function UploadPage() {
         {queuedFiles.length > 0 && (
           <div className="upload-queue">
             <h3>Upload Queue</h3>
+            <ul className="slash-flat-list">
+              <li>
+                <button
+                  className="simple-button"
+                  onClick={() => document.getElementById('file-input')?.click()}
+                  disabled={isUploading}
+                >
+                  add more files
+                </button>
+              </li>
+              <li>
+                <button
+                  className="simple-button"
+                  onClick={clearFinished}
+                  disabled={!queuedFiles.find((f) => f.status === 'complete')}
+                >
+                  clear finished (
+                  {queuedFiles.filter((f) => f.status === 'complete').length})
+                </button>
+              </li>
+              <li>
+                <button
+                  className="simple-button"
+                  onClick={uploadAllFiles}
+                  disabled={
+                    isUploading ||
+                    queuedFiles.every((f) => f.status === 'complete')
+                  }
+                >
+                  {isUploading
+                    ? 'uploading...'
+                    : `upload all (${queuedFiles.filter((f) => f.status === 'ready' || f.status === 'error').length})`}
+                </button>
+              </li>
+            </ul>
+
+            {/* Progress Summary */}
+            <div className="upload-progress">
+              [
+              {Array(
+                Math.floor(
+                  (queuedFiles.filter((f) => f.status === 'complete').length /
+                    queuedFiles.length) *
+                    20
+                )
+              )
+                .fill('█')
+                .join('')}
+              {Array(
+                20 -
+                  Math.floor(
+                    (queuedFiles.filter((f) => f.status === 'complete').length /
+                      queuedFiles.length) *
+                      20
+                  )
+              )
+                .fill('░')
+                .join('')}
+              ] {queuedFiles.filter((f) => f.status === 'complete').length}/
+              {queuedFiles.length} files complete
+            </div>
+
             {queuedFiles.map((queuedFile) => (
               <div key={queuedFile.id} className="upload-queue-item">
                 <div className="file-name">
@@ -284,32 +350,6 @@ export default function UploadPage() {
                 <div className="upload-queue-actions"></div>
               </div>
             ))}
-
-            <ul className="slash-flat-list">
-              <li>
-                <button
-                  className="simple-button"
-                  onClick={() => document.getElementById('file-input')?.click()}
-                  disabled={isUploading}
-                >
-                  add more files
-                </button>
-              </li>
-              <li>
-                <button
-                  className="simple-button"
-                  onClick={uploadAllFiles}
-                  disabled={
-                    isUploading ||
-                    queuedFiles.every((f) => f.status === 'complete')
-                  }
-                >
-                  {isUploading
-                    ? 'uploading...'
-                    : `upload all (${queuedFiles.filter((f) => f.status === 'ready' || f.status === 'error').length})`}
-                </button>
-              </li>
-            </ul>
           </div>
         )}
       </div>

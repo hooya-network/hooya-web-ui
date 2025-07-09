@@ -1,6 +1,6 @@
 import DeepHeader from '@/components/DeepHeader';
 import Footer from '@/components/Footer';
-import { SystemInfoProvider } from '@/contexts/SystemInfoContext';
+import { InstanceProvider } from '@/contexts/InstanceContext';
 import './global.css';
 
 export const metadata = {
@@ -16,11 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SystemInfoProvider>
+        <InstanceProvider>
           <DeepHeader />
           {children}
           <Footer />
-        </SystemInfoProvider>
+        </InstanceProvider>
       </body>
     </html>
   );

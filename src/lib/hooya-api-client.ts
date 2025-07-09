@@ -167,6 +167,20 @@ export async function untagCid(
   return response.status === 204;
 }
 
+export async function forgetFile(cid: string) {
+  const endpoint = getWebProxyUrl();
+
+  const response = await apiCall(`${endpoint}/forget-file/${cid}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to forget file: ${response.statusText}`);
+  }
+
+  return response.status === 204;
+}
+
 // authentication
 export async function loginUser(password: string) {
   const endpoint = getWebProxyUrl();

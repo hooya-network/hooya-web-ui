@@ -52,7 +52,7 @@ export default function ClientTagsPage() {
     return (
       <main>
         <h2>All Tags</h2>
-        <div>Loading...</div>
+        <div>Loading…</div>
       </main>
     );
   }

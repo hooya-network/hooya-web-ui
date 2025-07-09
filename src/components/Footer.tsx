@@ -1,16 +1,16 @@
 'use client';
 
-import { useSystemInfo } from '@/contexts/SystemInfoContext';
+import { useInstance } from '@/contexts/InstanceContext';
 
 export default function Footer() {
-  const { systemInfo } = useSystemInfo();
+  const { instanceInfo } = useInstance();
 
   return (
     <footer id="page-footer">
       <ul className="slash-flat-list">
-        <li>{systemInfo?.daemon_version?.version_string || 'Loading...'}</li>
-        <li>{systemInfo?.webui_version?.version_string || 'Loading...'}</li>
-        <li>Operated by {systemInfo?.operator_name || 'Loading...'}</li>
+        <li>{instanceInfo?.daemon_version?.version_string || 'Loading…'}</li>
+        <li>{instanceInfo?.webui_version?.version_string || 'Loading…'}</li>
+        <li>Operated by {instanceInfo?.operator_name || 'Loading…'}</li>
       </ul>
       <ul className="emdash-flat-list">
         <li>

@@ -8,6 +8,9 @@ import {
   buildCidContentUrl,
   getCidInfo,
   getCidTags,
+  forgetFile,
+  tagCid,
+  untagCid,
 } from '@/lib/hooya-api-client';
 import { FileType } from '@/types';
 import Link from 'next/link';
@@ -24,6 +27,8 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [visibilityLoading, setVisibilityLoading] = useState(false);
 
   // check authentication status
   useEffect(() => {
@@ -53,10 +58,57 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
     fetchData();
   }, [cid]);
 
+  const handleDeleteFile = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to forget this file? This action cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    setDeleteLoading(true);
+    try {
+      await forgetFile(cid);
+      // redirect to home page after successful deletion
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Failed to delete file:', error);
+      alert('Failed to delete file. Please try again.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const isPrivate = () => {
+    return tags.some(
+      (tag) => tag.namespace === 'visibility' && tag.descriptor === 'private'
+    );
+  };
+
+  const handleVisibilityToggle = async () => {
+    const visibilityTag = { namespace: 'visibility', descriptor: 'private' };
+
+    if (isPrivate()) {
+      // remove visibility:private
+      await untagCid(cid, [visibilityTag]);
+      setTags(
+        tags.filter(
+          (tag) =>
+            !(tag.namespace === 'visibility' && tag.descriptor === 'private')
+        )
+      );
+    } else {
+      // visibility:private
+      await tagCid(cid, [visibilityTag]);
+      setTags([...tags, visibilityTag]);
+    }
+  };
+
   if (loading) {
     return (
       <main>
-        <div>Loading...</div>
+        <div>Loading…</div>
       </main>
     );
   }
@@ -112,7 +164,7 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
       </ul>
       <div
         id="cid-view"
-        className={`orientation-${fileOrientation || thumbOrientation}`}
+        className={`orientation-${fileOrientation || 'landscape'}`}
       >
         <div>
           <h3>Preview</h3>
@@ -203,6 +255,49 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
             {dlHintEntry('Duplication', '1 peer')}
             {dlHintEntry('Rating', 'Safe')}
           </dl>
+          {isAuthenticated && (
+            <>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <h3>Manage</h3>
+                <ul className="slash-flat-list">
+                  <li>
+                    <a
+                      onClick={handleVisibilityToggle}
+                      style={{
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {isPrivate() ? 'Make public' : 'Make private'}
+                    </a>
+                  </li>
+                  <li>
+                    <button
+                      onClick={handleDeleteFile}
+                      disabled={deleteLoading}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#d32f2f',
+                        cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                        textDecoration: 'underline',
+                        fontSize: 'inherit',
+                        fontFamily: 'inherit',
+                        padding: 0,
+                      }}
+                    >
+                      {deleteLoading ? 'Deleting...' : 'Forget File'}
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </main>

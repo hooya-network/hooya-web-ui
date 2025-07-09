@@ -11,7 +11,7 @@ import {
   getSuggestedTags,
 } from '@/lib/hooya-api-client';
 import { FileType } from '@/types';
-import { useSystemInfo } from '@/contexts/SystemInfoContext';
+import { useInstance } from '@/contexts/InstanceContext';
 
 interface ClientHomepageProps {
   searchParams: { [key: string]: string | undefined };
@@ -25,7 +25,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
   });
   const [initSuggest, setInitSuggest] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const { systemInfo } = useSystemInfo();
+  const { instanceInfo } = useInstance();
 
   const currPage = searchParams?.page || '1';
   const terms = useMemo(
@@ -88,7 +88,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
       <main>
         <div id="home-search">
           <h1>HooYa!</h1>
-          <div className="subtext">Loading...</div>
+          <div className="subtext">Loading…</div>
         </div>
       </main>
     );
@@ -99,21 +99,21 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
       <div id="home-search">
         <h1>HooYa!</h1>
         <div className="subtext">
-          Browsing &quot;{systemInfo?.instance_name || 'Loading...'}&quot;
+          Browsing &quot;{instanceInfo?.instance_name || 'Loading…'}&quot;
           instance
         </div>
         <div className="subtext">
-          Peer ID {systemInfo?.short_id || 'Loading...'}
+          Peer ID {instanceInfo?.short_id || 'Loading…'}
         </div>
         <Search page={currPage} initSuggest={initSuggest} />
         <div className="subtext">
-          {systemInfo?.daemon_version?.version_string || 'Loading...'} /{' '}
-          {systemInfo?.webui_version?.version_string || 'Loading...'} / Operated
-          by {systemInfo?.operator_name || 'Loading...'}
+          {instanceInfo?.daemon_version?.version_string || 'Loading…'} /{' '}
+          {instanceInfo?.webui_version?.version_string || 'Loading…'} / Operated
+          by {instanceInfo?.operator_name || 'Loading…'}
           <br />
-          {systemInfo?.stats
-            ? `${systemInfo.stats.files_indexed}+ files indexed / ${systemInfo.stats.associations_count}+ associations / ${systemInfo.stats.tags_count}+ tags`
-            : 'Loading statistics...'}
+          {instanceInfo?.stats
+            ? `${instanceInfo.stats.files_indexed}+ files indexed / ${instanceInfo.stats.associations_count}+ associations / ${instanceInfo.stats.tags_count}+ tags`
+            : 'Loading statistics…'}
         </div>
       </div>
       {pages && (

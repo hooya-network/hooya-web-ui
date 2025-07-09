@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Thumbnail } from '@/types';
-import { ConstructCIDThumbnailURL, ConstructCIDProcessingURL } from '@/helpers';
+import { ConstructCIDThumbnailURL } from '@/helpers';
 import { getCidInfo } from '@/lib/hooya-api-client';
+import { useInstance } from '@/contexts/InstanceContext';
 
 interface FileImageProps {
   cid: string;
@@ -28,70 +29,55 @@ export default function FileImage({
 }: FileImageProps) {
   const [currentThumbnails, setCurrentThumbnails] = useState(thumbnails);
   const [currentStatus, setCurrentStatus] = useState(processingStatus);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const { subscribeToProcessing, processingStatus: instanceProcessingStatus } =
+    useInstance();
 
-  const refreshThumbnails = useCallback(async () => {
-    try {
-      const data = await getCidInfo(cid);
-      if (data.ext_file?.thumbnails) {
-        setCurrentThumbnails(data.ext_file.thumbnails);
-        setCurrentStatus(0); // mark as finished
+  const refreshThumbnails = useCallback(
+    async (markAsFinished = false) => {
+      try {
+        const data = await getCidInfo(cid);
+        if (data.ext_file?.thumbnails) {
+          setCurrentThumbnails(data.ext_file.thumbnails);
+          if (markAsFinished) {
+            setCurrentStatus(0); // only mark as finished when explicitly requested
+          }
+        }
+      } catch (error) {
+        console.error('Failed to refresh thumbnails:', error);
       }
-    } catch (error) {
-      console.error('Failed to refresh thumbnails:', error);
-    }
-  }, [cid]);
+    },
+    [cid]
+  );
 
-  const closeProcessingMonitor = () => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-    }
-  };
-
-  const startProcessingMonitor = useCallback(
-    async (cid: string) => {
-      if (eventSourceRef.current) return; // already monitoring
-
-      const eventSource = new EventSource(await ConstructCIDProcessingURL(cid));
-
-      eventSource.addEventListener('thumbnail_generated', async () => {
-        // first thumbnail is ready - switch from processing.gif to thumbnail
-        await refreshThumbnails();
-        // don't close monitor yet - more thumbnails might be generating
-      });
-
-      eventSource.addEventListener('video_preview_generated', async () => {
-        // first video preview is ready - switch from processing.gif to preview
-        await refreshThumbnails();
-        // don't close monitor yet - more previews might be generating
-      });
-
-      eventSource.addEventListener('processing_finished', async () => {
-        // all processing complete - refresh one final time and close monitor
-        await refreshThumbnails();
-        closeProcessingMonitor();
-      });
-
-      eventSource.addEventListener('processing_failed', () => {
-        setCurrentStatus(2); // mark as failed
-        closeProcessingMonitor();
-      });
-
-      eventSource.onerror = () => {
-        // graceful degradation - just close connection
-        closeProcessingMonitor();
-      };
-
-      eventSourceRef.current = eventSource;
+  const handleProcessingEvent = useCallback(
+    async (event: any) => {
+      switch (event.event_type) {
+        case 'thumbnail_generated':
+        case 'video_preview_generated':
+          // thumbnail/preview is ready - refresh thumbnails but keep processing status
+          await refreshThumbnails(false); // don't mark as finished yet
+          break;
+        case 'processing_finished':
+          // all processing complete - refresh one final time and mark as finished
+          await refreshThumbnails(true); // mark as finished
+          break;
+        case 'processing_failed':
+          setCurrentStatus(2); // mark as failed
+          break;
+      }
     },
     [refreshThumbnails]
   );
 
   useEffect(() => {
-    // sync currentStatus with processingStatus prop
-    setCurrentStatus(processingStatus);
-  }, [processingStatus]);
+    // sync currentStatus with processingStatus prop or instance status
+    const instanceStatus = instanceProcessingStatus.get(cid);
+    if (instanceStatus !== undefined) {
+      setCurrentStatus(instanceStatus);
+    } else {
+      setCurrentStatus(processingStatus);
+    }
+  }, [cid, processingStatus, instanceProcessingStatus]);
 
   useEffect(() => {
     // sync currentThumbnails with thumbnails prop
@@ -99,15 +85,10 @@ export default function FileImage({
   }, [thumbnails]);
 
   useEffect(() => {
-    // only start sse if processing (status = 1)
-    if (currentStatus === 1) {
-      startProcessingMonitor(cid);
-    }
-
-    return () => {
-      closeProcessingMonitor();
-    };
-  }, [cid, currentStatus, startProcessingMonitor]);
+    // always subscribe to processing events for this CID
+    // the InstanceContext will handle connection management globally
+    return subscribeToProcessing(cid, handleProcessingEvent);
+  }, [cid, subscribeToProcessing, handleProcessingEvent]);
 
   // render logic
   const renderImage = () => {
@@ -184,9 +165,9 @@ export default function FileImage({
             width={200}
             className={`${className} processing-thumbnail`}
             src="/processing.gif"
-            alt="Processing..."
+            alt="Processing…"
           />
-          <div className="mimetype-indicator">processing...</div>
+          <div className="mimetype-indicator">processing…</div>
         </div>
       );
 
