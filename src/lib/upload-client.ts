@@ -61,14 +61,22 @@ export async function uploadChunk(
   return data;
 }
 
-export async function completeUpload(uploadId: string) {
+export async function completeUpload(
+  uploadId: string,
+  tags?: { namespace: string; descriptor: string }[]
+) {
   const endpoint = getWebProxyUrl();
+
+  const requestBody = {
+    tags: tags || [],
+  };
 
   const response = await apiCall(`${endpoint}/complete-upload/${uploadId}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {

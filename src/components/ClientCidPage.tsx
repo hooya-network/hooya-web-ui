@@ -28,7 +28,6 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
   const [editMode, setEditMode] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [visibilityLoading, setVisibilityLoading] = useState(false);
 
   // check authentication status
   useEffect(() => {
@@ -80,28 +79,40 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
     }
   };
 
-  const isPrivate = () => {
-    return tags.some(
+  const getVisibilityState = () => {
+    const hasPrivate = tags.some(
       (tag) => tag.namespace === 'visibility' && tag.descriptor === 'private'
     );
+    const hasUnindexed = tags.some(
+      (tag) => tag.namespace === 'visibility' && tag.descriptor === 'unindexed'
+    );
+
+    if (hasPrivate) return 'private';
+    if (hasUnindexed) return 'unindexed';
+    return 'public';
   };
 
-  const handleVisibilityToggle = async () => {
-    const visibilityTag = { namespace: 'visibility', descriptor: 'private' };
+  const handleVisibilityChange = async (
+    newVisibility: 'public' | 'unindexed' | 'private'
+  ) => {
+    const currentVisibility = getVisibilityState();
+    if (currentVisibility === newVisibility) return;
 
-    if (isPrivate()) {
-      // remove visibility:private
-      await untagCid(cid, [visibilityTag]);
-      setTags(
-        tags.filter(
-          (tag) =>
-            !(tag.namespace === 'visibility' && tag.descriptor === 'private')
-        )
-      );
-    } else {
-      // visibility:private
-      await tagCid(cid, [visibilityTag]);
-      setTags([...tags, visibilityTag]);
+    // remove any existing visibility tags
+    const visibilityTags = tags.filter((tag) => tag.namespace === 'visibility');
+    if (visibilityTags.length > 0) {
+      await untagCid(cid, visibilityTags);
+      setTags(tags.filter((tag) => tag.namespace !== 'visibility'));
+    }
+
+    // add new visibility tag if not public
+    if (newVisibility !== 'public') {
+      const newTag = { namespace: 'visibility', descriptor: newVisibility };
+      await tagCid(cid, [newTag]);
+      setTags([
+        ...tags.filter((tag) => tag.namespace !== 'visibility'),
+        newTag,
+      ]);
     }
   };
 
@@ -255,50 +266,70 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
             {dlHintEntry('Duplication', '1 peer')}
             {dlHintEntry('Rating', 'Safe')}
           </dl>
-          {isAuthenticated && (
-            <>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <h3>Manage</h3>
-                <ul className="slash-flat-list">
-                  <li>
-                    <a
-                      onClick={handleVisibilityToggle}
-                      style={{
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {isPrivate() ? 'Make public' : 'Make private'}
-                    </a>
-                  </li>
-                  <li>
-                    <button
-                      onClick={handleDeleteFile}
-                      disabled={deleteLoading}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#d32f2f',
-                        cursor: deleteLoading ? 'not-allowed' : 'pointer',
-                        textDecoration: 'underline',
-                        fontSize: 'inherit',
-                        fontFamily: 'inherit',
-                        padding: 0,
-                      }}
-                    >
-                      {deleteLoading ? 'Deleting...' : 'Forget File'}
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </>
-          )}
         </div>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '1ch',
+        }}
+      >
+        <p></p>
+        <ul className="slash-flat-list">
+          <li>
+            <a
+              onClick={() => handleVisibilityChange('public')}
+              style={{
+                cursor: 'pointer',
+                opacity: getVisibilityState() === 'public' ? 1 : 0.5,
+              }}
+            >
+              Public
+            </a>
+          </li>
+          <li>
+            <a
+              onClick={() => handleVisibilityChange('unindexed')}
+              style={{
+                cursor: 'pointer',
+                opacity: getVisibilityState() === 'unindexed' ? 1 : 0.5,
+              }}
+            >
+              Unindexed
+            </a>
+          </li>
+          <li>
+            <a
+              onClick={() => handleVisibilityChange('private')}
+              style={{
+                cursor: 'pointer',
+                opacity: getVisibilityState() === 'private' ? 1 : 0.5,
+              }}
+            >
+              Private
+            </a>
+          </li>
+          <li>
+            <button
+              onClick={handleDeleteFile}
+              disabled={deleteLoading}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#d32f2f',
+                cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                textDecoration: 'underline',
+                fontSize: 'inherit',
+                fontFamily: 'inherit',
+                padding: 0,
+              }}
+            >
+              {deleteLoading ? 'Deleting...' : 'Forget File'}
+            </button>
+          </li>
+        </ul>
       </div>
     </main>
   );

@@ -1,4 +1,5 @@
 import { apiCall } from './hooya-web-client';
+import { setRefreshToken } from '../utils/auth';
 
 export function getWebProxyUrl() {
   return process.env.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
@@ -194,18 +195,19 @@ export async function loginUser(password: string) {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: formData.toString(),
+    credentials: 'include', // Include cookies in the request
   });
 
   if (!response.ok) {
     throw new Error(`Login failed: ${response.statusText}`);
   }
 
-  const jwt = await response.text();
+  const loginResponse = await response.json();
 
-  // store token in localStorage
-  localStorage.setItem('jwt', jwt);
+  // store refresh token in localStorage
+  setRefreshToken(loginResponse.refresh_token);
 
-  return { token: jwt, success: true };
+  return { success: true };
 }
 
 // url construction helpers

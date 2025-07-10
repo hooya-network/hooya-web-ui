@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Thumbnail } from '@/types';
 import { ConstructCIDThumbnailURL } from '@/helpers';
 import { getCidInfo } from '@/lib/hooya-api-client';
@@ -53,12 +52,12 @@ export default function FileImage({
     async (event: any) => {
       switch (event.event_type) {
         case 'thumbnail_generated':
+          await refreshThumbnails(false);
+          break;
         case 'video_preview_generated':
-          // thumbnail/preview is ready - refresh thumbnails but keep processing status
-          await refreshThumbnails(false); // don't mark as finished yet
+          await refreshThumbnails(false);
           break;
         case 'processing_finished':
-          // all processing complete - refresh one final time and mark as finished
           await refreshThumbnails(true); // mark as finished
           break;
         case 'processing_failed':
@@ -94,6 +93,8 @@ export default function FileImage({
   const renderImage = () => {
     // show thumbnail if available
     if (currentThumbnails.length > 0) {
+      // so broken. we should really return the short name like
+      // "medium" in the response instead of relying on order
       const thumbnailIndex =
         (size === 'medium' || size === 'large') && currentThumbnails.length > 1
           ? 1
@@ -103,15 +104,17 @@ export default function FileImage({
       if (thumbnail?.mimetype?.startsWith('image')) {
         const imgElement = (
           <div className="file-preview-container">
-            <Image
+            <img
               height={thumbnail.height}
               width={thumbnail.width}
               className={className}
               src={ConstructCIDThumbnailURL(
                 thumbnail.source_cid,
-                typeof size === 'number' ? size.toString() : size
+                (thumbnail.aspect_ratio > 1
+                  ? thumbnail.width
+                  : thumbnail.height
+                ).toString()
               )}
-              alt=""
             />
             <div className="mimetype-indicator">{thumbnail.mimetype}</div>
           </div>
@@ -157,10 +160,11 @@ export default function FileImage({
       }
     }
 
+    // processing
     if (currentStatus === 1) {
       const processingElement = (
         <div className="file-preview-container">
-          <Image
+          <img
             height={200}
             width={200}
             className={`${className} processing-thumbnail`}
@@ -178,10 +182,10 @@ export default function FileImage({
       );
     }
 
-    // fallback to no-thumb.gif (for finished with no thumbs, failed, etc)
+    // fallback for things w/o thumbnail
     const imgElement = (
       <div className="file-preview-container">
-        <Image
+        <img
           height={200}
           width={200}
           className={className}

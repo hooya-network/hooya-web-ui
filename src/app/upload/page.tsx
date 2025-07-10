@@ -27,12 +27,30 @@ type QueuedFile = {
   error?: string;
   uploadId?: string;
   cid?: string;
+  visibility: 'public' | 'unindexed' | 'private';
 };
 
 export default function UploadPage() {
   const [queuedFiles, setQueuedFiles] = useState<QueuedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [defaultVisibility, setDefaultVisibility] = useState<
+    'public' | 'unindexed' | 'private'
+  >('public');
+
+  const updateDefaultVisibility = (
+    visibility: 'public' | 'unindexed' | 'private'
+  ) => {
+    setDefaultVisibility(visibility);
+    // Update visibility for all existing files that aren't already uploaded
+    setQueuedFiles((prev) =>
+      prev.map((file) =>
+        file.status === 'ready' || file.status === 'error'
+          ? { ...file, visibility }
+          : file
+      )
+    );
+  };
 
   const addFiles = (files: File[]) => {
     const newFiles: QueuedFile[] = files.map((file) => ({
@@ -43,12 +61,23 @@ export default function UploadPage() {
       type: file.type,
       status: 'ready',
       progress: 0,
+      visibility: defaultVisibility,
     }));
     setQueuedFiles((prev) => [...prev, ...newFiles]);
   };
 
   const removeFile = (id: string) => {
     setQueuedFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  const convertVisibilityToTags = (
+    visibility: 'public' | 'unindexed' | 'private'
+  ): { namespace: string; descriptor: string }[] => {
+    if (visibility === 'public') {
+      // public files have no visibility tags
+      return [];
+    }
+    return [{ namespace: 'visibility', descriptor: visibility }];
   };
 
   const updateFileStatus = (
@@ -139,7 +168,8 @@ export default function UploadPage() {
         if (chunkResult.status === 1) {
           // UPLOAD_COMPLETE = 1
           // When status is COMPLETE, we should call completeUpload to get the final CID
-          const result = await completeUpload(session.upload_id);
+          const tags = convertVisibilityToTags(queuedFile.visibility);
+          const result = await completeUpload(session.upload_id, tags);
           updateFileStatus(
             queuedFile.id,
             'complete',
@@ -152,7 +182,8 @@ export default function UploadPage() {
       }
 
       // 3. Complete upload (this should only run if we exit the loop without UPLOAD_COMPLETE)
-      const result = await completeUpload(session.upload_id);
+      const tags = convertVisibilityToTags(queuedFile.visibility);
+      const result = await completeUpload(session.upload_id, tags);
       updateFileStatus(queuedFile.id, 'complete', 100, undefined, result.cid);
     } catch (error) {
       console.error('Upload error:', error);
@@ -259,6 +290,52 @@ export default function UploadPage() {
               </li>
             </ul>
 
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: '1ch',
+              }}
+            >
+              <span>Default visibility:</span>
+              <ul className="slash-flat-list">
+                <li>
+                  <a
+                    onClick={() => updateDefaultVisibility('public')}
+                    style={{
+                      cursor: 'pointer',
+                      opacity: defaultVisibility === 'public' ? 1 : 0.5,
+                    }}
+                  >
+                    Public
+                  </a>
+                </li>
+                <li>
+                  <a
+                    onClick={() => updateDefaultVisibility('unindexed')}
+                    style={{
+                      cursor: 'pointer',
+                      opacity: defaultVisibility === 'unindexed' ? 1 : 0.5,
+                    }}
+                  >
+                    Unindexed
+                  </a>
+                </li>
+                <li>
+                  <a
+                    onClick={() => updateDefaultVisibility('private')}
+                    style={{
+                      cursor: 'pointer',
+                      opacity: defaultVisibility === 'private' ? 1 : 0.5,
+                    }}
+                  >
+                    Private
+                  </a>
+                </li>
+              </ul>
+            </div>
+
             {/* Progress Summary */}
             <div className="upload-progress">
               [
@@ -321,6 +398,9 @@ export default function UploadPage() {
                       {queuedFile.status === 'error' &&
                         ` Error: ${queuedFile.error}`}
                     </dd>
+                    <br />
+                    <dt>Visibility</dt>&nbsp;
+                    <dd>{queuedFile.visibility}</dd>
                   </dl>
                 </div>
                 {queuedFile.status === 'uploading' && (

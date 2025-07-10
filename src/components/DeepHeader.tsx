@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useInstance } from '../contexts/InstanceContext';
+import { getRefreshToken, logout } from '../utils/auth';
 
 export default function DeepHeader() {
-  const [jwt, setJwt] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const { instanceInfo } = useInstance();
 
   useEffect(() => {
-    setJwt(localStorage.getItem('jwt'));
+    setIsLoggedIn(!!getRefreshToken());
   }, []);
 
   return (
@@ -21,7 +22,7 @@ export default function DeepHeader() {
         <li>
           <Link href="/tags">Tags</Link>
         </li>
-        {jwt && (
+        {isLoggedIn && (
           <>
             <li>
               <Link href="/upload">Upload</Link>
@@ -31,13 +32,15 @@ export default function DeepHeader() {
         <li>
           <Link href="/about">About</Link>
         </li>
-        {jwt ? (
+        {isLoggedIn ? (
           <li>
             <Link
               href="/"
-              onClick={() => {
-                localStorage.removeItem('jwt');
-                setJwt(null);
+              onClick={async (e) => {
+                e.preventDefault();
+                await logout();
+                setIsLoggedIn(false);
+                window.location.reload();
               }}
             >
               Logout

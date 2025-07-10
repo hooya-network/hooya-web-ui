@@ -1,50 +1,31 @@
 // hooya web client with automatic token refresh
 
-import { shouldRefreshToken, refreshToken } from '../utils/auth';
+import { refreshAccessToken } from '../utils/auth';
 
 // enhanced fetch with automatic token refresh
 export async function apiCall(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  let token = localStorage.getItem('jwt');
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include', // always include cookies for access token
+  });
 
-  // check if token needs refresh
-  if (token && shouldRefreshToken(token)) {
+  // if we get a 401, attempt to refresh the access token and retry
+  if (response.status === 401) {
     try {
-      const newToken = await refreshToken(token);
-      localStorage.setItem('jwt', newToken);
-      token = newToken;
+      await refreshAccessToken();
+      // retry original request
+      return await fetch(url, {
+        ...options,
+        credentials: 'include',
+      });
     } catch (error) {
-      // refresh failed, clear token and redirect to login
-      localStorage.removeItem('jwt');
+      // refresh failed, redirect to login
       window.location.href = '/login';
       throw error;
     }
-  }
-
-  // add authorization header if token exists
-  const headers = {
-    ...options.headers,
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  if (response.status === 401 && token) {
-    localStorage.removeItem('jwt');
-
-    // retry original request without token
-    const retryHeaders = { ...options.headers };
-    delete retryHeaders['Authorization'];
-
-    return await fetch(url, {
-      ...options,
-      headers: retryHeaders,
-    });
   }
 
   return response;
