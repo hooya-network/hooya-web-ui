@@ -11,6 +11,7 @@ export type FileType = {
   cid: string;
   size: BigInt;
   mimetype: string;
+  processing_status?: number;
   ext_file: {
     height: BigInt;
     width: BigInt;

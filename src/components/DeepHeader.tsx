@@ -40,18 +40,18 @@ export default function DeepHeader() {
                 e.preventDefault();
                 await logout();
                 setIsLoggedIn(false);
-                window.location.reload();
+                if (typeof window !== 'undefined') {
+                  window.location.reload();
+                }
               }}
             >
               Logout
             </Link>
           </li>
         ) : (
-          window && (
-            <li>
-              <Link href="/login">Login</Link>
-            </li>
-          )
+          <li>
+            <Link href="/login">Login</Link>
+          </li>
         )}
       </ul>
       <span id="header-title">

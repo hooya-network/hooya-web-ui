@@ -31,8 +31,10 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
 
   // check authentication status
   useEffect(() => {
-    const token = localStorage.getItem('jwt');
-    setIsAuthenticated(!!token);
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('jwt');
+      setIsAuthenticated(!!token);
+    }
   }, []);
 
   useEffect(() => {
@@ -58,6 +60,8 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
   }, [cid]);
 
   const handleDeleteFile = async () => {
+    if (typeof window === 'undefined') return;
+
     if (
       !window.confirm(
         'Are you sure you want to forget this file? This action cannot be undone.'
@@ -168,7 +172,7 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
       <ul className="emdash-flat-list" id="download-file">
         <li key="original">
           <Link href={contentUrl}>
-            Download File ({sizeToHumanReadable(size)})
+            Download File ({sizeToHumanReadable(Number(size))})
           </Link>
         </li>
         <li key="mimetype">{mimetype}</li>
@@ -253,9 +257,9 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
               extFile.width &&
               dlHintEntry(
                 'Dimensions',
-                `${extFile.height}x${extFile.width} ${extFile.height * extFile.width > 100000 ? `(${((extFile.height * extFile.width) / 1000000).toFixed(1)} MPixels)` : ''}`
+                `${extFile.height}x${extFile.width} ${Number(extFile.height) * Number(extFile.width) > 100000 ? `(${((Number(extFile.height) * Number(extFile.width)) / 1000000).toFixed(1)} MPixels)` : ''}`
               )}
-            {dlHintEntry('Size', sizeToHumanReadable(size))}
+            {dlHintEntry('Size', sizeToHumanReadable(Number(size)))}
           </dl>
           <h3>Net Info</h3>
           <dl className="file-info flat-list">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, Suspense } from 'react';
 import ImageMasonGrid from '@/components/ImageMasonGrid';
 import Search from '@/components/Search';
 import PageNavigation from '@/components/PageNavigation';
@@ -105,7 +105,9 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
         <div className="subtext">
           Peer ID {instanceInfo?.short_id || 'Loading…'}
         </div>
-        <Search page={currPage} initSuggest={initSuggest} />
+        <Suspense fallback={<div>Loading search...</div>}>
+          <Search initSuggest={initSuggest} />
+        </Suspense>
         <div className="subtext">
           {instanceInfo?.daemon_version?.version_string || 'Loading…'} /{' '}
           {instanceInfo?.webui_version?.version_string || 'Loading…'} / Operated

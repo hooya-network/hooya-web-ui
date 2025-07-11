@@ -265,8 +265,8 @@ export default function TagEditForm({
         )}
 
         <p style={{ margin: '0.5ch 0 0 0', fontSize: '0.9rem', color: '#666' }}>
-          Use namespace:descriptor format (e.g., "artist:username") or just
-          "descriptor" for general tags
+          Use namespace:descriptor format (e.g., &quot;artist:username&quot;) or
+          just &quot;descriptor&quot; for general tags
         </p>
       </div>
     </div>

@@ -25,7 +25,7 @@ const TagBlock = ({ tags }: TagBlockProps) => {
           </h3>
           <div className={`tag-namespace-${namespace}`}>
             {descriptors.map((descriptor) => (
-              <span key={descriptor} className="tag-descriptor">
+              <span key={descriptor.toString()} className="tag-descriptor">
                 ?&nbsp;
                 <Link href={`/?query=${namespace}:${descriptor}`}>
                   {descriptor}

@@ -13,7 +13,7 @@ interface FileImageProps {
   processingStatus?: number;
   contentUrl: string;
   className?: string;
-  size?: 'small' | 'medium' | number;
+  size?: 'small' | 'medium' | 'large' | number;
   clickable?: boolean;
 }
 

@@ -9,13 +9,13 @@ import React from 'react';
 
 export default function Search({ initSuggest }: { initSuggest: string[] }) {
   const searchParams = useSearchParams();
-  const terms = searchParams.get('query')?.split(',');
+  const terms = searchParams?.get('query')?.split(',');
 
   let [searchSuggestions, setSearchSuggestions] = useState(initSuggest);
 
   // clean up duplicates from URL parameters
   const cleanTerms = terms
-    ? [...new Set(terms.filter((term) => term.trim()))]
+    ? Array.from(new Set(terms.filter((term) => term.trim())))
     : [];
   let [activeQuery, setActiveQuery] = useState(cleanTerms.join(',') || '');
 
@@ -31,6 +31,8 @@ export default function Search({ initSuggest }: { initSuggest: string[] }) {
   }
 
   function validate() {
+    if (typeof document === 'undefined') return;
+
     // Cleans query parameter from URL before submission if empty
     const queryInput = document.getElementById(
       'search-query'
@@ -51,21 +53,24 @@ export default function Search({ initSuggest }: { initSuggest: string[] }) {
         id="search-form"
         onSubmit={(e) => {
           e.preventDefault();
-          const queryInput = document.getElementById(
-            'search-query'
-          ) as HTMLInputElement;
+          // const queryInput = document.getElementById(
+          //   'search-query'
+          // ) as HTMLInputElement;
           validate();
 
           console.log('Form submission - activeQuery:', activeQuery);
+
+          if (typeof window === 'undefined') return;
 
           // manually construct the URL with the correct query
           const url = new URL(window.location.href);
           if (activeQuery.trim()) {
             // ensure no duplicates in the final query
-            const cleanQuery = [
-              ...new Set(activeQuery.split(',').filter((term) => term.trim())),
-            ].join(',');
+            const cleanQuery = Array.from(
+              new Set(activeQuery.split(',').filter((term) => term.trim()))
+            ).join(',');
             url.searchParams.set('query', cleanQuery);
+            url.searchParams.set('page', '1');
           } else {
             url.searchParams.delete('query');
           }

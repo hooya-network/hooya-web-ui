@@ -8,14 +8,6 @@ import {
   uploadChunk,
 } from '@/lib/upload-client';
 
-type UploadStatus = 'idle' | 'uploading' | 'complete' | 'error';
-
-type UploadProgress = {
-  bytesUploaded: number;
-  totalBytes: number;
-  currentChunk: number;
-};
-
 type QueuedFile = {
   id: string;
   file: File;
@@ -231,7 +223,11 @@ export default function UploadPage() {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onClick={() => document.getElementById('file-input')?.click()}
+          onClick={() => {
+            if (typeof document !== 'undefined') {
+              document.getElementById('file-input')?.click();
+            }
+          }}
         >
           <p>
             {queuedFiles.length > 0
@@ -258,7 +254,11 @@ export default function UploadPage() {
               <li>
                 <button
                   className="simple-button"
-                  onClick={() => document.getElementById('file-input')?.click()}
+                  onClick={() => {
+                    if (typeof document !== 'undefined') {
+                      document.getElementById('file-input')?.click();
+                    }
+                  }}
                   disabled={isUploading}
                 >
                   add more files
