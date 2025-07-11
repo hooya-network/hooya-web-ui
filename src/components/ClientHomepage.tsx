@@ -25,6 +25,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
   });
   const [initSuggest, setInitSuggest] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [imagesLoading, setImagesLoading] = useState(false);
   const { instanceInfo } = useInstance();
 
   const currPage = searchParams?.page || '1';
@@ -33,12 +34,41 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     [searchParams?.query]
   );
 
+  // fetch suggestions only when search terms change, not on pagination
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
+    async function fetchSuggestions() {
+      try {
+        const termsString = terms?.join(',') || '';
+        const suggestions = await getSuggestedTags(termsString);
+        setInitSuggest(suggestions.slice(0, 10));
+      } catch (error) {
+        console.error('Failed to fetch suggestions:', error);
+      }
+    }
+
+    fetchSuggestions();
+  }, [terms]);
+
+  // set main loading state only when search terms change or initial load
+  useEffect(() => {
+    if (loading) {
+      // this is initial load, keep loading state
+      return;
+    }
+    // terms changed after initial load, show loading state
+    setLoading(true);
+  }, [terms]);
+
+  // fetch images when page or search terms change
+  useEffect(() => {
+    async function fetchImages() {
+      // only show main loading on initial load or term changes
+      // use imagesLoading for pagination
+      if (!loading) {
+        setImagesLoading(true);
+      }
 
       try {
-        // fetch images
         let resp;
         if (!terms) {
           resp = await getRecentFiles(currPage);
@@ -68,20 +98,16 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
           ));
           setImages(imageElements);
         }
-
-        // fetch suggestions
-        const termsString = terms?.join(',') || '';
-        const suggestions = await getSuggestedTags(termsString);
-        setInitSuggest(suggestions.slice(0, 10));
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error('Failed to fetch images:', error);
       } finally {
         setLoading(false);
+        setImagesLoading(false);
       }
     }
 
-    fetchData();
-  }, [currPage, terms]);
+    fetchImages();
+  }, [currPage, terms, loading]);
 
   if (loading) {
     return (
@@ -106,7 +132,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
           Peer ID {instanceInfo?.short_id || 'Loading…'}
         </div>
         <Suspense fallback={<div>Loading search...</div>}>
-          <Search initSuggest={initSuggest} />
+          <Search key="main-search" initSuggest={initSuggest} />
         </Suspense>
         <div className="subtext">
           {instanceInfo?.daemon_version?.version_string || 'Loading…'} /{' '}
@@ -126,7 +152,11 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
             finalPageToken={pages?.final_page_token}
             query={terms?.join(',')}
           />
-          <ImageMasonGrid imageBlocks={images} />
+          {imagesLoading ? (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>Loading images...</div>
+          ) : (
+            <ImageMasonGrid imageBlocks={images} />
+          )}
           <PageNavigation
             currPage={currPage}
             nextPageToken={

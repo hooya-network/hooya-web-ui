@@ -4,11 +4,12 @@ import { getSuggestedTags } from '@/lib/hooya-api-client';
 import { useState } from 'react';
 import Autocomplete from '@mui/material/Autocomplete';
 import { TextField } from '@mui/material';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import React from 'react';
 
 export default function Search({ initSuggest }: { initSuggest: string[] }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const terms = searchParams?.get('query')?.split(',');
 
   let [searchSuggestions, setSearchSuggestions] = useState(initSuggest);
@@ -70,13 +71,13 @@ export default function Search({ initSuggest }: { initSuggest: string[] }) {
               new Set(activeQuery.split(',').filter((term) => term.trim()))
             ).join(',');
             url.searchParams.set('query', cleanQuery);
-            url.searchParams.set('page', '1');
+            url.searchParams.delete('page'); // first page always
           } else {
             url.searchParams.delete('query');
           }
 
           console.log('Form submission - final URL:', url.toString());
-          window.location.href = url.toString();
+          router.push(url.pathname + url.search);
         }}
       >
         <div className="search-bar">
