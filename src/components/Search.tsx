@@ -59,8 +59,6 @@ export default function Search({ initSuggest }: { initSuggest: string[] }) {
           // ) as HTMLInputElement;
           validate();
 
-          console.log('Form submission - activeQuery:', activeQuery);
-
           if (typeof window === 'undefined') return;
 
           // manually construct the URL with the correct query
@@ -76,7 +74,6 @@ export default function Search({ initSuggest }: { initSuggest: string[] }) {
             url.searchParams.delete('query');
           }
 
-          console.log('Form submission - final URL:', url.toString());
           router.push(url.pathname + url.search);
         }}
       >

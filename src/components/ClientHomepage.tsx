@@ -76,9 +76,9 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
           resp = await searchFiles(terms, [], [], currPage);
         }
 
-        if (resp?.next_page_token && resp?.final_page_token) {
+        if (resp?.final_page_token !== undefined) {
           setPages({
-            next_page_token: resp.next_page_token,
+            next_page_token: resp.next_page_token || '',
             final_page_token: resp.final_page_token,
           });
         }
@@ -153,7 +153,9 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
             query={terms?.join(',')}
           />
           {imagesLoading ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>Loading images...</div>
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              Loading images...
+            </div>
           ) : (
             <ImageMasonGrid imageBlocks={images} />
           )}
