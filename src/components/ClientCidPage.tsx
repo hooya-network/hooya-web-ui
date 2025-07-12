@@ -32,7 +32,7 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
   // check authentication status
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('jwt');
+      const token = localStorage.getItem('refresh_token');
       setIsAuthenticated(!!token);
     }
   }, []);
@@ -280,60 +280,61 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
           marginTop: '1ch',
         }}
       >
-        <p></p>
-        <ul className="slash-flat-list">
-          <li>
-            <a
-              onClick={() => handleVisibilityChange('public')}
-              style={{
-                cursor: 'pointer',
-                opacity: getVisibilityState() === 'public' ? 1 : 0.5,
-              }}
-            >
-              Public
-            </a>
-          </li>
-          <li>
-            <a
-              onClick={() => handleVisibilityChange('unindexed')}
-              style={{
-                cursor: 'pointer',
-                opacity: getVisibilityState() === 'unindexed' ? 1 : 0.5,
-              }}
-            >
-              Unindexed
-            </a>
-          </li>
-          <li>
-            <a
-              onClick={() => handleVisibilityChange('private')}
-              style={{
-                cursor: 'pointer',
-                opacity: getVisibilityState() === 'private' ? 1 : 0.5,
-              }}
-            >
-              Private
-            </a>
-          </li>
-          <li>
-            <button
-              onClick={handleDeleteFile}
-              disabled={deleteLoading}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#d32f2f',
-                cursor: deleteLoading ? 'not-allowed' : 'pointer',
-                textDecoration: 'underline',
-                fontSize: 'inherit',
-                fontFamily: 'inherit',
-                padding: 0,
-              }}
-            >
-              {deleteLoading ? 'Deleting...' : 'Forget File'}
-            </button>
-          </li>
-        </ul>
+        {isAuthenticated && (
+          <ul className="slash-flat-list">
+            <li>
+              <a
+                onClick={() => handleVisibilityChange('public')}
+                style={{
+                  cursor: 'pointer',
+                  opacity: getVisibilityState() === 'public' ? 1 : 0.5,
+                }}
+              >
+                Public
+              </a>
+            </li>
+            <li>
+              <a
+                onClick={() => handleVisibilityChange('unindexed')}
+                style={{
+                  cursor: 'pointer',
+                  opacity: getVisibilityState() === 'unindexed' ? 1 : 0.5,
+                }}
+              >
+                Unindexed
+              </a>
+            </li>
+            <li>
+              <a
+                onClick={() => handleVisibilityChange('private')}
+                style={{
+                  cursor: 'pointer',
+                  opacity: getVisibilityState() === 'private' ? 1 : 0.5,
+                }}
+              >
+                Private
+              </a>
+            </li>
+            <li>
+              <button
+                onClick={handleDeleteFile}
+                disabled={deleteLoading}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#d32f2f',
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                  textDecoration: 'underline',
+                  fontSize: 'inherit',
+                  fontFamily: 'inherit',
+                  padding: 0,
+                }}
+              >
+                {deleteLoading ? 'Deleting...' : 'Forget File'}
+              </button>
+            </li>
+          </ul>
+        )}
       </div>
     </main>
   );

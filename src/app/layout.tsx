@@ -16,7 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <Script src="/env.js" strategy="beforeInteractive" />
+      {typeof window !== 'undefined' && (
+        <Script src="/env.js" strategy="beforeInteractive" />
+      )}
       <body>
         <InstanceProvider>
           <DeepHeader />
