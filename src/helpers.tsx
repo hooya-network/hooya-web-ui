@@ -11,5 +11,9 @@ export function ConstructCIDThumbnailURL(cid: string, size?: string) {
 }
 
 export function WebProxyUrl() {
-  return process.env.HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
+  return (
+    window?.__ENV__?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
+    process?.env?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
+    'http://localhost:8532'
+  );
 }

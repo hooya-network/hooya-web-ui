@@ -1,8 +1,14 @@
+'use client';
+
 import { apiCall } from './hooya-web-client';
 import { setRefreshToken } from '../utils/auth';
 
 export function getWebProxyUrl() {
-  return process.env.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
+  return (
+    window?.__ENV__?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
+    process?.env?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
+    'http://localhost:8532'
+  );
 }
 
 // search and file queries

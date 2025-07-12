@@ -1,8 +1,5 @@
 import { apiCall } from './hooya-web-client';
-
-function getWebProxyUrl() {
-  return process.env.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
-}
+import { getWebProxyUrl } from '@/lib/hooya-api-client';
 
 export async function startUploadSession(
   size: number,

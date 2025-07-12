@@ -31,7 +31,9 @@ export async function refreshAccessToken(): Promise<void> {
   }
 
   const endpoint =
-    process.env.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
+    window?.__ENV__?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
+    process?.env?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
+    'http://localhost:8532';
 
   const response = await fetch(`${endpoint}/login`, {
     method: 'POST',
@@ -57,7 +59,9 @@ export async function logout(): Promise<void> {
 
   try {
     const endpoint =
-      process.env.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL || 'http://localhost:8532';
+      window?.__ENV__?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
+      process?.env?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
+      'http://localhost:8532';
     await fetch(`${endpoint}/logout`, {
       method: 'POST',
       credentials: 'include', // Important for cross-origin cookie clearing

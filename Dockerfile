@@ -35,6 +35,14 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+RUN chown -R nextjs:nodejs ./public
+
+# env template
+COPY public/env.template.js ./env.template.js
+COPY entrypoint.sh ./entrypoint.sh
+
+RUN apk add --no-cache gettext \
+  && chmod +x ./entrypoint.sh
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
@@ -51,7 +59,4 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD HOSTNAME="0.0.0.0" node server.js
-
+ENTRYPOINT ["./entrypoint.sh"]

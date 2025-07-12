@@ -110,10 +110,7 @@ export default function FileImage({
               className={className}
               src={ConstructCIDThumbnailURL(
                 thumbnail.source_cid,
-                (thumbnail.aspect_ratio > 1
-                  ? thumbnail.width
-                  : thumbnail.height
-                ).toString()
+                Math.max(thumbnail.width, thumbnail.height).toString()
               )}
             />
             <div className="mimetype-indicator">{thumbnail.mimetype}</div>

@@ -19,6 +19,7 @@
 
           # You can choose pnpm, yarn, or none (npm).
           nodePackages.pnpm
+          nodePackages.prettier
           # pkgs.yarn
 
           nodePackages.typescript
