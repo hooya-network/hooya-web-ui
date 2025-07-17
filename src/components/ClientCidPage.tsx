@@ -14,12 +14,14 @@ import {
 } from '@/lib/hooya-api-client';
 import { FileType } from '@/types';
 import Link from 'next/link';
+import { useInstance } from '@/contexts/InstanceContext';
 
 interface ClientCidPageProps {
   cid: string;
 }
 
 export default function ClientCidPage({ cid }: ClientCidPageProps) {
+  const { instanceInfo } = useInstance();
   const [cidInfo, setCidInfo] = useState<FileType | null>(null);
   const [tags, setTags] = useState<{ namespace: string; descriptor: string }[]>(
     []
@@ -50,7 +52,7 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
         setCidInfo(info);
         setTags(tagData);
       } catch (error) {
-        console.error('Failed to fetch CID data:', error);
+        console.error('failed to fetch CID data:', error);
       } finally {
         setLoading(false);
       }
@@ -76,8 +78,8 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
       // redirect to home page after successful deletion
       window.location.href = '/';
     } catch (error) {
-      console.error('Failed to delete file:', error);
-      alert('Failed to delete file. Please try again.');
+      console.error('failed to delete file:', error);
+      alert('failed to delete file. Please try again.');
     } finally {
       setDeleteLoading(false);
     }
@@ -131,7 +133,7 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
   if (!cidInfo) {
     return (
       <main>
-        <div>Failed to load file information</div>
+        <div>failed to load file information</div>
       </main>
     );
   }
@@ -263,8 +265,8 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
           </dl>
           <h3>Net Info</h3>
           <dl className="file-info flat-list">
-            {dlHintEntry('Uploader', '0xC262a…a048')}
-            {dlHintEntry('Owner', '0xC262a…a048')}
+            {dlHintEntry('Uploader', instanceInfo?.operator_name || 'Unknown')}
+            {dlHintEntry('Owner', instanceInfo?.operator_name || 'Unknown')}
             {/*dlHintEntry("Date", "6 hours ago")*/}
             {dlHintEntry('Favorites', '0')}
             {dlHintEntry('Duplication', '1 peer')}

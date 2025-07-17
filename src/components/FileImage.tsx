@@ -42,7 +42,7 @@ export default function FileImage({
           }
         }
       } catch (error) {
-        console.error('Failed to refresh thumbnails:', error);
+        console.error('failed to refresh thumbnails:', error);
       }
     },
     [cid]

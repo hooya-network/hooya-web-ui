@@ -27,6 +27,9 @@ export default function DeepHeader() {
             <li>
               <Link href="/upload">Upload</Link>
             </li>
+            <li>
+              <Link href="/chat/channel/general">Chat</Link>
+            </li>
           </>
         )}
         <li>

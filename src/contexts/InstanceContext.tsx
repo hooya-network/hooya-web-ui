@@ -48,7 +48,15 @@ export interface ProcessingEvent {
   mimetype?: string;
 }
 
+export interface ChatEvent {
+  channel: string;
+  content: string;
+  node_id: string;
+  signature: string;
+}
+
 export type ProcessingCallback = (event: ProcessingEvent) => void;
+export type ChatCallback = (event: ChatEvent) => void;
 
 interface InstanceContextType {
   instanceInfo: InstanceInfo | null;
@@ -61,6 +69,8 @@ interface InstanceContextType {
     callback: ProcessingCallback
   ) => () => void;
   processingStatus: Map<string, number>;
+
+  subscribeToChatEvents: (callback: ChatCallback) => () => void;
 }
 
 const InstanceContext = createContext<InstanceContextType | undefined>(
@@ -76,9 +86,11 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
     new Map()
   );
   const eventSourceRef = useRef<EventSource | null>(null);
+  const chatEventSourceRef = useRef<EventSource | null>(null);
   const subscribersRef = useRef<Map<string, Set<ProcessingCallback>>>(
     new Map()
   );
+  const chatSubscribersRef = useRef<Set<ChatCallback>>(new Set());
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef<number>(0);
 
@@ -106,7 +118,7 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
         });
         setError(null);
       } catch (err) {
-        console.error('Failed to fetch system info:', err);
+        console.error('failed to fetch system info:', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);
@@ -216,6 +228,50 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
     });
   }, [getRetryInterval]);
 
+  const startChatSSEConnection = useCallback(() => {
+    if (chatEventSourceRef.current) {
+      return;
+    }
+
+    const eventSource = new EventSource(`${getWebProxyUrl()}/api/events/chat`, {
+      withCredentials: true,
+    });
+    chatEventSourceRef.current = eventSource;
+
+    // connected
+    eventSource.onopen = () => {};
+
+    eventSource.onerror = (error) => {
+      console.error('Chat SSE error:', error);
+
+      if (chatEventSourceRef.current === eventSource) {
+        chatEventSourceRef.current.close();
+        chatEventSourceRef.current = null;
+      }
+
+      retryTimeoutRef.current = setTimeout(() => {
+        startChatSSEConnection();
+      }, getRetryInterval());
+    };
+
+    eventSource.addEventListener('chat_message', (e) => {
+      try {
+        const chatEvent: ChatEvent = JSON.parse(e.data);
+
+        chatSubscribersRef.current.forEach((callback) => callback(chatEvent));
+      } catch (err) {
+        console.error('failed to parse chat event:', err);
+      }
+    });
+  }, []);
+
+  const stopChatSSEConnection = useCallback(() => {
+    if (chatEventSourceRef.current) {
+      chatEventSourceRef.current.close();
+      chatEventSourceRef.current = null;
+    }
+  }, []);
+
   // stop SSE connection and clear retry timers
   const stopSSEConnection = useCallback(() => {
     if (eventSourceRef.current) {
@@ -253,17 +309,27 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const subscribeToChatEvents = useCallback((callback: ChatCallback) => {
+    chatSubscribersRef.current.add(callback);
+
+    return () => {
+      chatSubscribersRef.current.delete(callback);
+    };
+  }, []);
+
   // start SSE connection automatically when provider mounts
   useEffect(() => {
     startSSEConnection();
-  }, [startSSEConnection]);
+    startChatSSEConnection();
+  }, [startSSEConnection, startChatSSEConnection]);
 
   // cleanup on unmount
   useEffect(() => {
     return () => {
       stopSSEConnection();
+      stopChatSSEConnection();
     };
-  }, [stopSSEConnection]);
+  }, [stopSSEConnection, stopChatSSEConnection]);
 
   return (
     <InstanceContext.Provider
@@ -273,6 +339,7 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
         error,
         subscribeToProcessing,
         processingStatus,
+        subscribeToChatEvents,
       }}
     >
       {children}

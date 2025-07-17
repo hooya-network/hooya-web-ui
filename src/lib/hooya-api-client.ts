@@ -26,7 +26,7 @@ export async function searchFiles(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to search files: ${response.statusText}`);
+    throw new Error(`failed to search files: ${response.statusText}`);
   }
 
   return await response.json();
@@ -40,7 +40,7 @@ export async function getRecentFiles(page: string = '1') {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to get recent files: ${response.statusText}`);
+    throw new Error(`failed to get recent files: ${response.statusText}`);
   }
 
   return await response.json();
@@ -54,7 +54,7 @@ export async function getCidInfo(cid: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to get CID info: ${response.statusText}`);
+    throw new Error(`failed to get CID info: ${response.statusText}`);
   }
 
   return await response.json();
@@ -68,7 +68,7 @@ export async function getCidTags(cid: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to get CID tags: ${response.statusText}`);
+    throw new Error(`failed to get CID tags: ${response.statusText}`);
   }
 
   return await response.json();
@@ -109,7 +109,7 @@ export async function getAllTags(page: string = '1') {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to get tags: ${response.statusText}`);
+    throw new Error(`failed to get tags: ${response.statusText}`);
   }
 
   return await response.json();
@@ -139,7 +139,7 @@ export async function tagCid(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to tag CID: ${response.statusText}`);
+    throw new Error(`failed to tag CID: ${response.statusText}`);
   }
 
   return response.status === 201;
@@ -168,7 +168,7 @@ export async function untagCid(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to untag CID: ${response.statusText}`);
+    throw new Error(`failed to untag CID: ${response.statusText}`);
   }
 
   return response.status === 204;
@@ -182,7 +182,7 @@ export async function forgetFile(cid: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to forget file: ${response.statusText}`);
+    throw new Error(`failed to forget file: ${response.statusText}`);
   }
 
   return response.status === 204;
@@ -228,4 +228,53 @@ export function buildCidThumbnailUrl(cid: string, size?: string) {
 
 export function buildCidProcessingUrl(cid: string) {
   return `${getWebProxyUrl()}/cid-processing/${cid}`;
+}
+
+export async function sendChatMessage(channel: string, content: string) {
+  const endpoint = getWebProxyUrl();
+
+  const response = await apiCall(`${endpoint}/api/chat/send`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ channel, content }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`failed to send chat message: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+export async function getChatChannels() {
+  const endpoint = getWebProxyUrl();
+
+  const response = await apiCall(`${endpoint}/api/chat/channels`, {
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error(`failed to get chat channels: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+export async function getChatHistory(channel: string, pageToken: string = '') {
+  const endpoint = getWebProxyUrl();
+
+  const response = await apiCall(
+    `${endpoint}/api/chat/history/${encodeURIComponent(channel)}/${encodeURIComponent(pageToken)}`,
+    {
+      cache: 'no-store',
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`failed to get chat history: ${response.statusText}`);
+  }
+
+  return await response.json();
 }

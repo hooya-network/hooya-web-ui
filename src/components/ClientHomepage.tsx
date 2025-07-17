@@ -42,7 +42,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
         const suggestions = await getSuggestedTags(termsString);
         setInitSuggest(suggestions.slice(0, 10));
       } catch (error) {
-        console.error('Failed to fetch suggestions:', error);
+        console.error('failed to fetch suggestions:', error);
       }
     }
 
@@ -99,7 +99,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
           setImages(imageElements);
         }
       } catch (error) {
-        console.error('Failed to fetch images:', error);
+        console.error('failed to fetch images:', error);
       } finally {
         setLoading(false);
         setImagesLoading(false);

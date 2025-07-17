@@ -138,7 +138,7 @@ export default function TagEditForm({
 
       onSave(tags);
     } catch (error) {
-      console.error('Failed to save tags:', error);
+      console.error('failed to save tags:', error);
     } finally {
       setSaving(false);
     }

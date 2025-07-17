@@ -39,7 +39,7 @@ export default function ClientTagsPage() {
 
         setTags(allTags);
       } catch (error) {
-        console.error('Failed to fetch tags:', error);
+        console.error('failed to fetch tags:', error);
       } finally {
         setLoading(false);
       }

@@ -21,7 +21,7 @@ export async function startUploadSession(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to start upload session: ${response.statusText}`);
+    throw new Error(`failed to start upload session: ${response.statusText}`);
   }
 
   const data: StartUploadSessionResponse = await response.json();
@@ -51,7 +51,7 @@ export async function uploadChunk(
   );
 
   if (!response.ok) {
-    throw new Error(`Failed to upload chunk: ${response.statusText}`);
+    throw new Error(`failed to upload chunk: ${response.statusText}`);
   }
 
   const data: UploadChunkResponse = await response.json();
@@ -79,7 +79,7 @@ export async function completeUpload(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Failed to complete upload: ${response.statusText} - ${errorText}`
+      `failed to complete upload: ${response.statusText} - ${errorText}`
     );
   }
 
