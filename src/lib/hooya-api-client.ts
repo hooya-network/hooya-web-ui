@@ -262,7 +262,7 @@ export async function getChatChannels() {
   return await response.json();
 }
 
-export async function getChatHistory(channel: string, pageToken: string = '') {
+export async function getChatHistory(channel: string, pageToken: string = '0') {
   const endpoint = getWebProxyUrl();
 
   const response = await apiCall(

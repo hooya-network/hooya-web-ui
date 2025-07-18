@@ -14,6 +14,8 @@ interface ChatMessage {
   channel: string;
   content: string;
   fadeState?: 'entering' | 'visible';
+  renderProgress?: number; // 0 to content.length for character-by-character rendering
+  charStates?: number[]; // array of render state for each character (0-4, where 4 is final)
 }
 
 interface Channel {
@@ -31,11 +33,13 @@ export default function ChatChannelPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [isLockedToBottom, setIsLockedToBottom] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesAreaRef = useRef<HTMLTextAreaElement>(null);
 
+  // unicode characters for rendering animation
+  const renderChars = ['█', '▓', '▒', '░'];
+
   // get instance context at the top
-  const { subscribeToChatEvents, instanceInfo } = useInstance();
+  const { subscribeToChatEvents } = useInstance();
 
   // scroll to bottom and check scroll lock status
   const scrollToBottom = () => {
@@ -102,24 +106,95 @@ export default function ChatChannelPage() {
     }
   }, [activeChannel]);
 
-  // subscribe to real-time chat events
+  // subscribe to chat events
   useEffect(() => {
     const unsubscribe = subscribeToChatEvents((event) => {
       if (event.channel === activeChannel) {
-        // add new message with fade-in animation
-        const newMsg = { ...event, fadeState: 'entering' as const };
+        // add new message with funny rendering states
+        const initialCharStates = new Array(event.content.length).fill(0);
+        const newMsg = {
+          ...event,
+          fadeState: 'entering' as const,
+          renderProgress: 0,
+          charStates: initialCharStates,
+        };
         setMessages((prev) => [...prev, newMsg]);
 
-        // trigger fade-in animation
-        setTimeout(() => {
-          setMessages((prev) =>
-            prev.map((msg, index) =>
-              index === prev.length - 1 && msg.fadeState === 'entering'
-                ? { ...msg, fadeState: 'visible' }
-                : msg
-            )
-          );
-        }, 50);
+        // start cascading animation
+        const startCharacterAnimation = (messageIndex: number) => {
+          let currentChar = 0;
+          const content = event.content;
+
+          const animateNextChar = () => {
+            if (currentChar < content.length) {
+              // start animating this one through render states
+              const charIndex = currentChar;
+              let renderState = 0;
+
+              const animateCharacter = () => {
+                if (renderState < renderChars.length) {
+                  setMessages((prev) =>
+                    prev.map((msg, index) => {
+                      if (
+                        index === messageIndex &&
+                        msg.fadeState === 'entering'
+                      ) {
+                        const newCharStates = [...(msg.charStates || [])];
+                        newCharStates[charIndex] = renderState;
+                        return { ...msg, charStates: newCharStates };
+                      }
+                      return msg;
+                    })
+                  );
+                  renderState++;
+                  setTimeout(animateCharacter, 20);
+                } else {
+                  // character finished cycling, show final character
+                  setMessages((prev) =>
+                    prev.map((msg, index) => {
+                      if (
+                        index === messageIndex &&
+                        msg.fadeState === 'entering'
+                      ) {
+                        const newCharStates = [...(msg.charStates || [])];
+                        newCharStates[charIndex] = renderChars.length; // final state
+                        return { ...msg, charStates: newCharStates };
+                      }
+                      return msg;
+                    })
+                  );
+                }
+              };
+
+              animateCharacter();
+              currentChar++;
+              setTimeout(animateNextChar, 20);
+            } else {
+              // all characters started rendering, mark as visible after they finish
+              setTimeout(
+                () => {
+                  setMessages((prev) =>
+                    prev.map((msg, index) =>
+                      index === messageIndex && msg.fadeState === 'entering'
+                        ? { ...msg, fadeState: 'visible' }
+                        : msg
+                    )
+                  );
+                },
+                renderChars.length * 20 + 20
+              ); // wait for last character to finish
+            }
+          };
+
+          animateNextChar();
+        };
+
+        // get the message index and start animation
+        setMessages((prev) => {
+          const messageIndex = prev.length - 1;
+          startCharacterAnimation(messageIndex);
+          return prev;
+        });
       }
     });
 
@@ -147,48 +222,9 @@ export default function ChatChannelPage() {
     }
   };
 
-  const highlightMentions = (content: string) => {
-    const operatorName = instanceInfo?.operator_name;
-
-    if (!operatorName) {
-      // unregistered name
-      return content;
-    }
-
-    // lazy but gets the job done
-    const mentionRegex = new RegExp(`(\\s|^)(${operatorName})(\\s|$)`, 'gi');
-    return content.replace(mentionRegex, '$1<strong>$2</strong>$3');
-  };
-
-  const renderFadeMessage = (message: ChatMessage, index: number) => {
-    const baseContent = highlightMentions(message.content);
-
-    if (message.fadeState === 'entering') {
-      const fadeBlocks = '░'.repeat(Math.min(message.content.length, 20));
-      return (
-        <div key={`${index}-entering`} style={{ fontFamily: 'monospace' }}>
-          {fadeBlocks}
-        </div>
-      );
-    }
-
-    if (message.fadeState === 'visible') {
-      return (
-        <div
-          key={`${index}-visible`}
-          dangerouslySetInnerHTML={{ __html: baseContent }}
-        />
-      );
-    }
-
-    return (
-      <div key={index} dangerouslySetInnerHTML={{ __html: baseContent }} />
-    );
-  };
-
   return (
     <main>
-      <div className="upload-container">
+      <div>
         {/* Channel Selection */}
         {channels.length > 0 && (
           <div style={{ marginBottom: '2ch' }}>
@@ -211,7 +247,7 @@ export default function ChatChannelPage() {
         )}
 
         {/* Chat Messages */}
-        <div className="upload-queue">
+        <div>
           <h3>#{activeChannel}</h3>
 
           {!loading && (
@@ -223,7 +259,27 @@ export default function ChatChannelPage() {
                 value={
                   messages.length === 0
                     ? 'No messages yet. Start the conversation!'
-                    : messages.map((msg) => msg.content).join('\n')
+                    : messages
+                        .map((msg) => {
+                          if (msg.fadeState === 'entering' && msg.charStates) {
+                            let renderedContent = '';
+
+                            for (let i = 0; i < msg.content.length; i++) {
+                              const charState = msg.charStates[i];
+                              if (charState >= renderChars.length) {
+                                // character finished cycling - show final character
+                                renderedContent += msg.content[i];
+                              } else {
+                                // character is cycling through render states
+                                renderedContent += renderChars[charState];
+                              }
+                            }
+
+                            return renderedContent;
+                          }
+                          return msg.content;
+                        })
+                        .join('\n')
                 }
                 style={{
                   width: '100%',

@@ -86,7 +86,6 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
     new Map()
   );
   const eventSourceRef = useRef<EventSource | null>(null);
-  const chatEventSourceRef = useRef<EventSource | null>(null);
   const subscribersRef = useRef<Map<string, Set<ProcessingCallback>>>(
     new Map()
   );
@@ -144,7 +143,8 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
     }
 
     const eventSource = new EventSource(
-      `${getWebProxyUrl()}/api/events/instance`
+      `${getWebProxyUrl()}/api/events/instance`,
+      { withCredentials: true }
     );
     eventSourceRef.current = eventSource;
 
@@ -226,51 +226,16 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
     eventSource.addEventListener('video_preview_generated', (e) => {
       handleProcessingEvent('video_preview_generated', JSON.parse(e.data));
     });
-  }, [getRetryInterval]);
-
-  const startChatSSEConnection = useCallback(() => {
-    if (chatEventSourceRef.current) {
-      return;
-    }
-
-    const eventSource = new EventSource(`${getWebProxyUrl()}/api/events/chat`, {
-      withCredentials: true,
-    });
-    chatEventSourceRef.current = eventSource;
-
-    // connected
-    eventSource.onopen = () => {};
-
-    eventSource.onerror = (error) => {
-      console.error('Chat SSE error:', error);
-
-      if (chatEventSourceRef.current === eventSource) {
-        chatEventSourceRef.current.close();
-        chatEventSourceRef.current = null;
-      }
-
-      retryTimeoutRef.current = setTimeout(() => {
-        startChatSSEConnection();
-      }, getRetryInterval());
-    };
 
     eventSource.addEventListener('chat_message', (e) => {
       try {
         const chatEvent: ChatEvent = JSON.parse(e.data);
-
         chatSubscribersRef.current.forEach((callback) => callback(chatEvent));
       } catch (err) {
         console.error('failed to parse chat event:', err);
       }
     });
-  }, []);
-
-  const stopChatSSEConnection = useCallback(() => {
-    if (chatEventSourceRef.current) {
-      chatEventSourceRef.current.close();
-      chatEventSourceRef.current = null;
-    }
-  }, []);
+  }, [getRetryInterval]);
 
   // stop SSE connection and clear retry timers
   const stopSSEConnection = useCallback(() => {
@@ -320,16 +285,14 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
   // start SSE connection automatically when provider mounts
   useEffect(() => {
     startSSEConnection();
-    startChatSSEConnection();
-  }, [startSSEConnection, startChatSSEConnection]);
+  }, [startSSEConnection]);
 
   // cleanup on unmount
   useEffect(() => {
     return () => {
       stopSSEConnection();
-      stopChatSSEConnection();
     };
-  }, [stopSSEConnection, stopChatSSEConnection]);
+  }, [stopSSEConnection]);
 
   return (
     <InstanceContext.Provider
