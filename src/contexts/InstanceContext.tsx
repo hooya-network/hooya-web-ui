@@ -8,7 +8,7 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
-import { getWebProxyUrl } from '@/lib/hooya-api-client';
+import { getWebProxyUrl } from '@/lib/runtime-config';
 
 export interface InstanceInfo {
   instance_name: string;

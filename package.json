@@ -1,11 +1,12 @@
 {
   "name": "hooya-web-ui",
-  "version": "0.1.0-alpha-5",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "npm run generate-config && next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "npm run generate-config && next start",
+    "generate-config": "export HOOYA_WEB_PROXY_URL=${HOOYA_WEB_PROXY_URL:-http://localhost:8532} && envsubst < public/config.template.js > public/config.js",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --write .",

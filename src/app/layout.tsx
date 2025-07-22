@@ -1,13 +1,14 @@
 import DeepHeader from '@/components/DeepHeader';
 import Footer from '@/components/Footer';
 import { InstanceProvider } from '@/contexts/InstanceContext';
-import Script from 'next/script';
 import './global.css';
 
 export const metadata = {
   title: 'HooYa!',
   // description: '',
 };
+
+import Script from 'next/script';
 
 export default function RootLayout({
   children,
@@ -16,9 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      {typeof window !== 'undefined' && (
-        <Script src="/env.js" strategy="beforeInteractive" />
-      )}
+      <head>
+        <Script src="/config.js" strategy="beforeInteractive" />
+      </head>
       <body>
         <InstanceProvider>
           <DeepHeader />

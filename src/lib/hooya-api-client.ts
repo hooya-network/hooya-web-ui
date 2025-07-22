@@ -2,14 +2,7 @@
 
 import { apiCall } from './hooya-web-client';
 import { setRefreshToken } from '../utils/auth';
-
-export function getWebProxyUrl() {
-  return (
-    window?.__ENV__?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
-    process?.env?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
-    'http://localhost:8532'
-  );
-}
+import { getWebProxyUrl } from './runtime-config';
 
 // search and file queries
 export async function searchFiles(

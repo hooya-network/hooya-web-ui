@@ -37,8 +37,8 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 RUN chown -R nextjs:nodejs ./public
 
-# env template
-COPY public/env.template.js ./env.template.js
+# config template and entrypoint
+COPY public/config.template.js ./public/config.template.js
 COPY entrypoint.sh ./entrypoint.sh
 
 RUN apk add --no-cache gettext \

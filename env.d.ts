@@ -2,8 +2,8 @@ export {};
 
 declare global {
   interface Window {
-    __ENV__?: {
-      NEXT_PUBLIC_HOOYA_WEB_PROXY_URL?: string;
+    __HOOYA_CONFIG__?: {
+      HOOYA_WEB_PROXY_URL: string;
     };
   }
 }

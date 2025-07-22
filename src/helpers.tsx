@@ -1,6 +1,9 @@
+import { getWebProxyUrl } from '@/lib/runtime-config';
+
 export async function ConstructCIDProcessingURL(cid: string) {
   return WebProxyUrl() + `/api/events/processing/${cid}`;
 }
+
 export function ConstructCIDContentURL(cid: string) {
   return WebProxyUrl() + `/cid-content/${cid}`;
 }
@@ -11,9 +14,5 @@ export function ConstructCIDThumbnailURL(cid: string, size?: string) {
 }
 
 export function WebProxyUrl() {
-  return (
-    window?.__ENV__?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
-    process?.env?.NEXT_PUBLIC_HOOYA_WEB_PROXY_URL ||
-    'http://localhost:8532'
-  );
+  return getWebProxyUrl();
 }
