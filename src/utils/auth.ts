@@ -26,6 +26,11 @@ export function clearRefreshToken(): void {
   localStorage.removeItem('refresh_token');
 }
 
+export function clearAccessToken(): void {
+  if (typeof window === 'undefined') return;
+  sessionStorage.removeItem('jwt');
+}
+
 export async function refreshAccessToken(): Promise<void> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
@@ -48,19 +53,19 @@ export async function refreshAccessToken(): Promise<void> {
     clearRefreshToken();
     throw new Error(`Token refresh failed: ${response.statusText}`);
   }
-
 }
 
 export async function logout(): Promise<void> {
   clearRefreshToken();
+  clearAccessToken();
 
   try {
     const endpoint = getWebProxyUrl();
     await fetch(`${endpoint}/logout`, {
       method: 'POST',
+      credentials: 'include',
     });
   } catch (error) {
     console.error('Logout request failed:', error);
-    // Continue with logout even if server request fails
   }
 }
