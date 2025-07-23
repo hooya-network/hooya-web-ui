@@ -1,5 +1,5 @@
 import { apiCall } from './hooya-web-client';
-import { getWebProxyUrl } from '@/lib/hooya-api-client';
+import { getWebProxyUrl } from '@/lib/runtime-config';
 
 export async function startUploadSession(
   size: number,

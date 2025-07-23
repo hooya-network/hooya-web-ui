@@ -15,6 +15,8 @@ interface FileImageProps {
   className?: string;
   size?: 'small' | 'medium' | 'large' | number;
   clickable?: boolean;
+  tags?: { namespace: string; descriptor: string }[];
+  signature?: string;
 }
 
 export default function FileImage({
@@ -25,6 +27,8 @@ export default function FileImage({
   className = '',
   size = 'medium',
   clickable = true,
+  tags = [],
+  signature,
 }: FileImageProps) {
   const [currentThumbnails, setCurrentThumbnails] = useState(thumbnails);
   const [currentStatus, setCurrentStatus] = useState(processingStatus);
@@ -89,6 +93,12 @@ export default function FileImage({
     return subscribeToProcessing(cid, handleProcessingEvent);
   }, [cid, subscribeToProcessing, handleProcessingEvent]);
 
+  // check if file is private and needs signature
+  const isPrivate = tags.some(
+    (tag) => tag.namespace === 'visibility' && tag.descriptor === 'private'
+  );
+  const useSignature = isPrivate ? signature : undefined;
+
   // render logic
   const renderImage = () => {
     // show thumbnail if available
@@ -110,7 +120,8 @@ export default function FileImage({
               className={className}
               src={ConstructCIDThumbnailURL(
                 thumbnail.source_cid,
-                Math.max(thumbnail.width, thumbnail.height).toString()
+                Math.max(thumbnail.width, thumbnail.height).toString(),
+                useSignature
               )}
             />
             <div className="mimetype-indicator">{thumbnail.mimetype}</div>
@@ -140,7 +151,8 @@ export default function FileImage({
               <source
                 src={ConstructCIDThumbnailURL(
                   thumbnail.source_cid,
-                  typeof size === 'number' ? size.toString() : size
+                  typeof size === 'number' ? size.toString() : size,
+                  useSignature
                 )}
                 type={thumbnail.mimetype}
               />

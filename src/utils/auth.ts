@@ -26,9 +26,20 @@ export function clearRefreshToken(): void {
   localStorage.removeItem('refresh_token');
 }
 
+// access token management (memory/sessionStorage)
+export function getAccessToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return sessionStorage.getItem('access_token');
+}
+
+export function setAccessToken(token: string): void {
+  if (typeof window === 'undefined') return;
+  sessionStorage.setItem('access_token', token);
+}
+
 export function clearAccessToken(): void {
   if (typeof window === 'undefined') return;
-  sessionStorage.removeItem('jwt');
+  sessionStorage.removeItem('access_token');
 }
 
 export async function refreshAccessToken(): Promise<void> {
@@ -45,27 +56,22 @@ export async function refreshAccessToken(): Promise<void> {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: `refresh_token=${encodeURIComponent(refreshToken)}`,
-    credentials: 'include', // Important: include cookies in the request
   });
 
   if (!response.ok) {
-    // refresh failed, clear refresh token
+    // refresh failed, clear tokens
     clearRefreshToken();
+    clearAccessToken();
     throw new Error(`Token refresh failed: ${response.statusText}`);
   }
+
+  const data = await response.json();
+  setAccessToken(data.access_token);
+  setRefreshToken(data.refresh_token);
 }
 
 export async function logout(): Promise<void> {
   clearRefreshToken();
   clearAccessToken();
-
-  try {
-    const endpoint = getWebProxyUrl();
-    await fetch(`${endpoint}/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-  } catch (error) {
-    console.error('Logout request failed:', error);
-  }
+  // no need to call server since we're just clearing client tokens
 }

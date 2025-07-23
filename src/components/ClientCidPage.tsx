@@ -155,7 +155,14 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
       ? 'portrait'
       : 'landscape';
 
-  const contentUrl = buildCidContentUrl(cid);
+  // check if file is private and use signature for content URL
+  const isPrivate = tags.some(
+    (tag) => tag.namespace === 'visibility' && tag.descriptor === 'private'
+  );
+  const contentUrl = buildCidContentUrl(
+    cid,
+    isPrivate && cidInfo?.signature ? cidInfo.signature : undefined
+  );
 
   const thumbnailElem = (
     <FileImage
@@ -166,6 +173,8 @@ export default function ClientCidPage({ cid }: ClientCidPageProps) {
       className="cid-detail-thumbnail"
       size="medium"
       clickable={true}
+      tags={cidInfo.tags}
+      signature={cidInfo.signature}
     />
   );
 

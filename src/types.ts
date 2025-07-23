@@ -19,6 +19,8 @@ export type FileType = {
     // colors: []
     thumbnails: Thumbnail[];
   };
+  tags?: { namespace: string; descriptor: string }[];
+  signature?: string;
 };
 
 export type UploadChunkResponse = {

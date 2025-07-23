@@ -1,7 +1,7 @@
 'use client';
 
 import { apiCall } from './hooya-web-client';
-import { setRefreshToken } from '../utils/auth';
+import { setRefreshToken, setAccessToken } from '../utils/auth';
 import { getWebProxyUrl } from './runtime-config';
 
 // search and file queries
@@ -194,7 +194,6 @@ export async function loginUser(password: string) {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: formData.toString(),
-    credentials: 'include', // Include cookies in the request
   });
 
   if (!response.ok) {
@@ -203,20 +202,31 @@ export async function loginUser(password: string) {
 
   const loginResponse = await response.json();
 
-  // store refresh token in localStorage
+  // store tokens
+  setAccessToken(loginResponse.access_token);
   setRefreshToken(loginResponse.refresh_token);
 
   return { success: true };
 }
 
 // url construction helpers
-export function buildCidContentUrl(cid: string) {
-  return `${getWebProxyUrl()}/cid-content/${cid}`;
+export function buildCidContentUrl(cid: string, signature?: string) {
+  const baseUrl = `${getWebProxyUrl()}/cid-content/${cid}`;
+  return signature
+    ? `${baseUrl}?sig=${encodeURIComponent(signature)}`
+    : baseUrl;
 }
 
-export function buildCidThumbnailUrl(cid: string, size?: string) {
+export function buildCidThumbnailUrl(
+  cid: string,
+  size?: string,
+  signature?: string
+) {
   const baseUrl = `${getWebProxyUrl()}/cid-thumbnail/${cid}`;
-  return size ? `${baseUrl}/${size}` : baseUrl;
+  const urlWithSize = size ? `${baseUrl}/${size}` : baseUrl;
+  return signature
+    ? `${urlWithSize}?sig=${encodeURIComponent(signature)}`
+    : urlWithSize;
 }
 
 export function buildCidProcessingUrl(cid: string) {

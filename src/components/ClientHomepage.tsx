@@ -94,6 +94,8 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
               contentUrl={`/cid/${f.cid}`}
               size="small"
               clickable={true}
+              tags={f.tags}
+              signature={f.signature}
             />
           ));
           setImages(imageElements);
