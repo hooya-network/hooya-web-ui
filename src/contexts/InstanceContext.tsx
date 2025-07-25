@@ -9,6 +9,7 @@ import React, {
   useCallback,
 } from 'react';
 import { getWebProxyUrl } from '@/lib/runtime-config';
+import { getAccessToken } from '@/utils/auth';
 
 export interface InstanceInfo {
   instance_name: string;
@@ -142,10 +143,12 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
       return; // connected
     }
 
-    const eventSource = new EventSource(
-      `${getWebProxyUrl()}/api/events/instance`,
-      { withCredentials: true }
-    );
+    const accessToken = getAccessToken();
+    const url = accessToken
+      ? `${getWebProxyUrl()}/api/events/instance?auth=${encodeURIComponent(accessToken)}`
+      : `${getWebProxyUrl()}/api/events/instance`;
+
+    const eventSource = new EventSource(url, { withCredentials: true });
     eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
