@@ -10,6 +10,26 @@
         pkgs = import nixpkgs { system = system; };
         isDarwin = pkgs.stdenv.isDarwin;
       in {
+        packages.default = pkgs.buildNpmPackage {
+          pname = "hooya-web-ui";
+          version = "0.1.2";
+          src = ./.;
+
+          npmDepsHash = "sha256-wXcmZUlbiBzB1UakquAOmsIcpvyUWWPvVdOFi1NDbw0=";
+
+          buildPhase = ''
+            npm run build
+          '';
+
+          installPhase = ''
+            mkdir -p $out
+            cp -r .next/standalone/* $out/ || true
+            mkdir -p $out/.next
+            [ -d .next/static ] && cp -r .next/static $out/.next/static || true
+            [ -d public ] && cp -r public $out/public || true
+          '';
+        };
+
         devShells.default = with pkgs; mkShell {
           buildInputs = [
           nodejs
