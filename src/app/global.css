@@ -516,6 +516,16 @@ a:hover {
   line-height: normal;
 }
 
+.mimetype-indicator-unindexed {
+  background-color: yellow;
+  color: white;
+}
+
+.mimetype-indicator-private {
+  background-color: red;
+  color: white;
+}
+
 /* Batch editing and file selection styles */
 .file-image-container {
   position: relative;

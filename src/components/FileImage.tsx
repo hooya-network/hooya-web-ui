@@ -114,6 +114,19 @@ const FileImage = React.memo(function FileImage({
   );
   const useSignature = isPrivate ? signature : undefined;
 
+  // private / unindexed text classes
+  const getVisibilityClass = () => {
+    const visibilityTag = tags.find((tag) => tag.namespace === 'visibility');
+    if (visibilityTag) {
+      if (visibilityTag.descriptor === 'private')
+        return 'mimetype-indicator-private';
+      if (visibilityTag.descriptor === 'unindexed')
+        return 'mimetype-indicator-unindexed';
+    }
+    return '';
+  };
+  const visibilityClass = getVisibilityClass();
+
   // render logic
   const renderImage = () => {
     // show thumbnail if available
@@ -140,7 +153,9 @@ const FileImage = React.memo(function FileImage({
               )}
               alt={`Thumbnail for ${cid}`}
             />
-            <div className="mimetype-indicator">{thumbnail.mimetype}</div>
+            <div className={`mimetype-indicator ${visibilityClass}`}>
+              {thumbnail.mimetype}
+            </div>
           </div>
         );
 
@@ -173,7 +188,9 @@ const FileImage = React.memo(function FileImage({
                 type={thumbnail.mimetype}
               />
             </video>
-            <div className="mimetype-indicator">{thumbnail.mimetype}</div>
+            <div className={`mimetype-indicator ${visibilityClass}`}>
+              {thumbnail.mimetype}
+            </div>
           </div>
         );
 
@@ -196,7 +213,9 @@ const FileImage = React.memo(function FileImage({
             src="/processing.gif"
             alt="Processing…"
           />
-          <div className="mimetype-indicator">processing…</div>
+          <div className={`mimetype-indicator ${visibilityClass}`}>
+            processing…
+          </div>
         </div>
       );
 
@@ -217,7 +236,7 @@ const FileImage = React.memo(function FileImage({
           src="/no-thumb.gif"
           alt="No thumbnail available"
         />
-        <div className="mimetype-indicator">
+        <div className={`mimetype-indicator ${visibilityClass}`}>
           {currentStatus === 2 ? 'failed' : 'no preview'}
         </div>
       </div>
