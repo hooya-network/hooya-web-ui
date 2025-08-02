@@ -181,8 +181,9 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
       const event: ProcessingEvent = {
         cid,
         event_type: eventName as ProcessingEvent['event_type'],
-        long_edge: data.long_edge,
-        mimetype: data.mimetype,
+        long_edge:
+          typeof data.long_edge === 'number' ? data.long_edge : undefined,
+        mimetype: typeof data.mimetype === 'string' ? data.mimetype : undefined,
       };
 
       // update processing status

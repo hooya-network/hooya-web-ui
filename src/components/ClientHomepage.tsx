@@ -6,6 +6,7 @@ import Search from '@/components/Search';
 import PageNavigation from '@/components/PageNavigation';
 import FileImage from '@/components/FileImage';
 import BatchControls from '@/components/BatchControls';
+import { SelectedFile } from '@/hooks/useFileSelection';
 import {
   searchFiles,
   getRecentFiles,
@@ -81,7 +82,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     }
     // terms changed after initial load, show loading state
     setLoading(true);
-  }, [terms, loading]);
+  }, [terms]);
 
   // fetch images when page or search terms change
   useEffect(() => {

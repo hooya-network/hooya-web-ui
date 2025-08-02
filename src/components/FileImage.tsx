@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Thumbnail } from '@/types';
 import { ConstructCIDThumbnailURL } from '@/helpers';
 import { getCidInfo } from '@/lib/hooya-api-client';
-import { useInstance } from '@/contexts/InstanceContext';
+import { useInstance, ProcessingEvent } from '@/contexts/InstanceContext';
 
 interface FileImageProps {
   cid: string;
@@ -68,7 +68,7 @@ const FileImage = React.memo(function FileImage({
   );
 
   const handleProcessingEvent = useCallback(
-    async (event: { event_type: string; [key: string]: unknown }) => {
+    async (event: ProcessingEvent) => {
       switch (event.event_type) {
         case 'thumbnail_generated':
           await refreshThumbnails(false);
