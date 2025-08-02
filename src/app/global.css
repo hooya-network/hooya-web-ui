@@ -568,7 +568,8 @@ a:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: black;
+  background-color: orange;
+  border: 3px solid;
   cursor: crosshair;
   z-index: 10;
 }

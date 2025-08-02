@@ -362,7 +362,6 @@ const FileImage = React.memo(function FileImage({
         </div>
       )}
 
-      {/* Selection overlay - only in select mode */}
       {selectMode && onToggleSelect && (
         <div
           className="selection-overlay"

@@ -211,7 +211,6 @@ export default function BatchControls({
 
   return (
     <div className="batch-controls">
-      {/* Top: Selection info and edit tags link */}
       <div className="batch-controls-header">
         <div>
           <strong>

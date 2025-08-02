@@ -227,8 +227,6 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
             : 'Loading statistics…'}
         </div>
       </div>
-
-      {/* Batch controls - show when in select mode */}
       {selectMode && (
         <BatchControls
           selectedFiles={selectedFiles}
@@ -241,7 +239,6 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
           onFilesDeleted={handleFilesDeleted}
         />
       )}
-
       {pages && (
         <>
           <div
@@ -285,7 +282,6 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
             }}
           >
             <span>
-              Page
               <PageNavigation
                 currPage={currPage}
                 nextPageToken={
@@ -294,10 +290,27 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
                 finalPageToken={pages?.final_page_token}
                 query={terms?.join(',')}
               />
+              Page
             </span>
-            <div></div>
+            {isAuthenticated && (
+              <a onClick={handleToggleSelectMode} style={{ cursor: 'pointer' }}>
+                {selectMode ? 'exit select mode' : 'select mode'}
+              </a>
+            )}
           </div>
         </>
+      )}
+      {selectMode && (
+        <BatchControls
+          selectedFiles={selectedFiles}
+          selectedCount={selectedCount}
+          sharedTags={getSharedTags()}
+          sharedVisibility={getSharedVisibility()}
+          onClearSelection={clearSelection}
+          onTagSave={handleBatchTagSave}
+          onVisibilityChange={handleBatchVisibilityChange}
+          onFilesDeleted={handleFilesDeleted}
+        />
       )}
     </main>
   );
