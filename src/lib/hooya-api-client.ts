@@ -122,7 +122,6 @@ export async function tagCid(
     )
     .join('&');
 
-  console.log(body);
   const response = await apiCall(`${endpoint}/tag-cid/${cid}`, {
     method: 'PATCH',
     headers: {

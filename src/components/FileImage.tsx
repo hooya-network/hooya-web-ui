@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Thumbnail } from '@/types';
 import { ConstructCIDThumbnailURL } from '@/helpers';
@@ -17,9 +17,18 @@ interface FileImageProps {
   clickable?: boolean;
   tags?: { namespace: string; descriptor: string }[];
   signature?: string;
+  // Selection support (only for multi-select contexts like homepage)
+  selectMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (file: {
+    cid: string;
+    tags: { namespace: string; descriptor: string }[];
+  }) => void;
+  // Hover tooltip control
+  showHoverTooltip?: boolean;
 }
 
-export default function FileImage({
+const FileImage = React.memo(function FileImage({
   cid,
   thumbnails = [],
   processingStatus = 0, // 0 = finished, 1 = processing, 2 = failed
@@ -29,9 +38,16 @@ export default function FileImage({
   clickable = true,
   tags = [],
   signature,
+  selectMode = false,
+  isSelected = false,
+  onToggleSelect,
+  showHoverTooltip = false,
 }: FileImageProps) {
   const [currentThumbnails, setCurrentThumbnails] = useState(thumbnails);
   const [currentStatus, setCurrentStatus] = useState(processingStatus);
+  const [isHovered, setIsHovered] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [hoverTimer, setHoverTimer] = useState<NodeJS.Timeout | null>(null);
   const { subscribeToProcessing, processingStatus: instanceProcessingStatus } =
     useInstance();
 
@@ -210,5 +226,141 @@ export default function FileImage({
     return clickable ? <Link href={contentUrl}>{imgElement}</Link> : imgElement;
   };
 
-  return renderImage();
-}
+  const imageContent = renderImage();
+
+  // organize tags for hover display
+  const organizeTags = (
+    tagList: { namespace: string; descriptor: string }[]
+  ) => {
+    let organizizedTags = new Map<string, string[]>();
+    tagList.forEach((t) => {
+      let descriptors = organizizedTags.get(t.namespace);
+      descriptors?.push(t.descriptor);
+      organizizedTags.set(t.namespace, descriptors || [t.descriptor]);
+    });
+    return organizizedTags;
+  };
+
+  const capitalizeNamespace = (namespace: string) => {
+    return namespace
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const organizedTags = organizeTags(tags);
+
+  // handle hover with delay and cleanup
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+    if (showHoverTooltip && tags.length > 0) {
+      if (hoverTimer) {
+        clearTimeout(hoverTimer);
+      }
+      const timer = setTimeout(() => {
+        setShowTooltip(true);
+      }, 100);
+      setHoverTimer(timer);
+    }
+  }, [showHoverTooltip, tags.length, hoverTimer]);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    // delay hiding tooltip to allow user to hover over it
+    const hideTimer = setTimeout(() => {
+      setShowTooltip(false);
+    }, 200);
+
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      setHoverTimer(null);
+    }
+
+    // store the hide timer so we can clear it if user hovers back
+    setHoverTimer(hideTimer);
+  }, [hoverTimer]);
+
+  const handleTooltipMouseEnter = useCallback(() => {
+    // cancel hide timer when hovering over tooltip
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      setHoverTimer(null);
+    }
+    setShowTooltip(true);
+  }, [hoverTimer]);
+
+  const handleTooltipMouseLeave = useCallback(() => {
+    setShowTooltip(false);
+  }, []);
+
+  // cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimer) {
+        clearTimeout(hoverTimer);
+      }
+    };
+  }, [hoverTimer]);
+
+  // always wrap with hover and selection functionality
+  return (
+    <div
+      className="file-image-container"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {imageContent}
+
+      {/* Tag hover tooltip - only show if enabled */}
+      {showHoverTooltip && tags.length > 0 && (
+        <div
+          className="tag-hover-tooltip"
+          onMouseEnter={handleTooltipMouseEnter}
+          onMouseLeave={handleTooltipMouseLeave}
+          style={{
+            opacity: showTooltip ? 1 : 0,
+            pointerEvents: showTooltip ? 'auto' : 'none',
+          }}
+        >
+          <div className="tag-block">
+            {Array.from(organizedTags).map(([namespace, descriptors]) => (
+              <div key={`hover-tag-namespace-${namespace}`}>
+                <h3>{capitalizeNamespace(namespace)}</h3>
+                <div className={`tag-namespace-${namespace}`}>
+                  {descriptors.map((descriptor, index) => (
+                    <span
+                      key={`hover-${namespace}-${descriptor}-${index}`}
+                      className="tag-descriptor"
+                    >
+                      ?&nbsp;
+                      <Link href={`/?query=${namespace}:${descriptor}`}>
+                        {descriptor}
+                      </Link>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Selection overlay - only in select mode */}
+      {selectMode && onToggleSelect && (
+        <div
+          className="selection-overlay"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleSelect({ cid, tags });
+          }}
+          style={{
+            opacity: isSelected ? 0.3 : 0,
+          }}
+        />
+      )}
+    </div>
+  );
+});
+
+export default FileImage;
