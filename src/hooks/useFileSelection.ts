@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { FileType } from '@/types';
 
 export interface SelectedFile {
   cid: string;

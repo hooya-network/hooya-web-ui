@@ -171,7 +171,10 @@ export function InstanceProvider({ children }: { children: React.ReactNode }) {
       }, retryInterval);
     };
 
-    const handleProcessingEvent = (eventName: string, data: any) => {
+    const handleProcessingEvent = (
+      eventName: string,
+      data: { cid?: string; [key: string]: unknown }
+    ) => {
       const cid = data.cid;
       if (!cid) return;
 

@@ -81,7 +81,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     }
     // terms changed after initial load, show loading state
     setLoading(true);
-  }, [terms]);
+  }, [terms, loading]);
 
   // fetch images when page or search terms change
   useEffect(() => {
@@ -122,7 +122,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
   }, [currPage, terms, loading]);
 
   // Batch editing handlers
-  const handleBatchTagSave = (updatedFiles: any[]) => {
+  const handleBatchTagSave = (updatedFiles: SelectedFile[]) => {
     // update the local files state with new tags
     setFiles((prevFiles) =>
       prevFiles.map((file) => {
@@ -135,7 +135,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     // don't clear selection - keep it for additional operations
   };
 
-  const handleBatchVisibilityChange = (updatedFiles: any[]) => {
+  const handleBatchVisibilityChange = (updatedFiles: SelectedFile[]) => {
     // update the local files state with new tags (including visibility changes)
     setFiles((prevFiles) =>
       prevFiles.map((file) => {

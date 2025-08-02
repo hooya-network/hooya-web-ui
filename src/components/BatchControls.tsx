@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { tagCid, untagCid, forgetFile } from '@/lib/hooya-api-client';
 import { SelectedFile } from '@/hooks/useFileSelection';
-import TagBlock from '@/components/TagBlock';
 
 interface Tag {
   namespace: string;
@@ -34,9 +33,7 @@ export default function BatchControls({
   const [editMode, setEditMode] = useState(false);
   const [tags, setTags] = useState<Tag[]>(sharedTags);
   const [newTagInput, setNewTagInput] = useState('');
-  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [visibilityLoading, setVisibilityLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 

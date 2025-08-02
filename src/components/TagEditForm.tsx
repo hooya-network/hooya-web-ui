@@ -23,7 +23,9 @@ export default function TagEditForm({
 }: TagEditFormProps) {
   const [tags, setTags] = useState<Tag[]>(initialTags);
   const [newTagInput, setNewTagInput] = useState('');
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<
+    { namespace: string; descriptor: string }[]
+  >([]);
   const [saving, setSaving] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 

@@ -45,7 +45,6 @@ const FileImage = React.memo(function FileImage({
 }: FileImageProps) {
   const [currentThumbnails, setCurrentThumbnails] = useState(thumbnails);
   const [currentStatus, setCurrentStatus] = useState(processingStatus);
-  const [isHovered, setIsHovered] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [hoverTimer, setHoverTimer] = useState<NodeJS.Timeout | null>(null);
   const { subscribeToProcessing, processingStatus: instanceProcessingStatus } =
@@ -69,7 +68,7 @@ const FileImage = React.memo(function FileImage({
   );
 
   const handleProcessingEvent = useCallback(
-    async (event: any) => {
+    async (event: { event_type: string; [key: string]: unknown }) => {
       switch (event.event_type) {
         case 'thumbnail_generated':
           await refreshThumbnails(false);
@@ -139,6 +138,7 @@ const FileImage = React.memo(function FileImage({
                 Math.max(thumbnail.width, thumbnail.height).toString(),
                 useSignature
               )}
+              alt={`Thumbnail for ${cid}`}
             />
             <div className="mimetype-indicator">{thumbnail.mimetype}</div>
           </div>
@@ -252,7 +252,6 @@ const FileImage = React.memo(function FileImage({
 
   // handle hover with delay and cleanup
   const handleMouseEnter = useCallback(() => {
-    setIsHovered(true);
     if (showHoverTooltip && tags.length > 0) {
       if (hoverTimer) {
         clearTimeout(hoverTimer);
@@ -265,7 +264,6 @@ const FileImage = React.memo(function FileImage({
   }, [showHoverTooltip, tags.length, hoverTimer]);
 
   const handleMouseLeave = useCallback(() => {
-    setIsHovered(false);
     // delay hiding tooltip to allow user to hover over it
     const hideTimer = setTimeout(() => {
       setShowTooltip(false);

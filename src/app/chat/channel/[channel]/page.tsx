@@ -199,7 +199,7 @@ export default function ChatChannelPage() {
     });
 
     return unsubscribe;
-  }, [activeChannel, subscribeToChatEvents]);
+  }, [activeChannel, subscribeToChatEvents, renderChars.length]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
