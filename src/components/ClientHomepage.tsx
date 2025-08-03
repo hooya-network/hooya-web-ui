@@ -75,16 +75,6 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     fetchSuggestions();
   }, [terms]);
 
-  // set main loading state only when search terms change or initial load
-  useEffect(() => {
-    if (loading) {
-      // this is initial load, keep loading state
-      return;
-    }
-    // terms changed after initial load, show loading state
-    setLoading(true);
-  }, [terms]);
-
   // fetch images when page or search terms change
   useEffect(() => {
     async function fetchImages() {
@@ -175,7 +165,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
   const areAllPageFilesSelected = useMemo(() => {
     if (files.length === 0) return false;
     return files.every((file) => isSelected(file.cid));
-  }, [files, isSelected, selectedFiles]);
+  }, [files, isSelected]);
 
   const handleToggleAllOnPage = useCallback(() => {
     if (areAllPageFilesSelected) {
