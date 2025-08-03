@@ -118,6 +118,16 @@ export function useFileSelection() {
     []
   );
 
+  const selectAllOnPage = useCallback((files: SelectedFile[]) => {
+    setSelectedFiles((prev) => {
+      const newSelection = new Map(prev);
+      files.forEach((file) => {
+        newSelection.set(file.cid, file);
+      });
+      return newSelection;
+    });
+  }, []);
+
   return {
     selectedFiles: Array.from(selectedFiles.values()),
     selectedCount: selectedFiles.size,
@@ -131,5 +141,6 @@ export function useFileSelection() {
     getSharedTags,
     getSharedVisibility,
     updateSelectedFilesTags,
+    selectAllOnPage,
   };
 }

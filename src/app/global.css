@@ -588,6 +588,13 @@ a:hover {
   margin-bottom: 1ch;
 }
 
+/* Hide number input spinners */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .batch-controls-actions {
   display: flex;
   justify-content: space-between;

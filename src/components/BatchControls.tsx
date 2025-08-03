@@ -18,6 +18,8 @@ interface BatchControlsProps {
   onTagSave: (updatedFiles: SelectedFile[]) => void;
   onVisibilityChange: (updatedFiles: SelectedFile[]) => void;
   onFilesDeleted: (deletedCids: string[]) => void;
+  onToggleAllOnPage?: () => void;
+  areAllPageFilesSelected?: boolean;
 }
 
 export default function BatchControls({
@@ -29,6 +31,8 @@ export default function BatchControls({
   onTagSave,
   onVisibilityChange,
   onFilesDeleted,
+  onToggleAllOnPage,
+  areAllPageFilesSelected,
 }: BatchControlsProps) {
   const [editMode, setEditMode] = useState(false);
   const [tags, setTags] = useState<Tag[]>(sharedTags);
@@ -211,22 +215,30 @@ export default function BatchControls({
 
   return (
     <div className="batch-controls">
-      <div className="batch-controls-header">
+      <div className="batch-controls-header" style={{ lineHeight: '1.5' }}>
         <div>
           <strong>
             {selectedCount} file{selectedCount !== 1 ? 's' : ''} selected
           </strong>
-          {selectedCount > 0 && (
-            <a
-              onClick={onClearSelection}
-              style={{
-                marginLeft: '1ch',
-                cursor: 'pointer',
-                color: '#666',
-              }}
-            >
-              (clear selection)
-            </a>
+          {(selectedCount > 0 || onToggleAllOnPage) && (
+            <ul className="slash-flat-list" style={{ marginTop: '0' }}>
+              {selectedCount > 0 && (
+                <li>
+                  <a onClick={onClearSelection} style={{ cursor: 'pointer' }}>
+                    clear selection
+                  </a>
+                </li>
+              )}
+              {onToggleAllOnPage && (
+                <li>
+                  <a onClick={onToggleAllOnPage} style={{ cursor: 'pointer' }}>
+                    {areAllPageFilesSelected
+                      ? 'unselect all on page'
+                      : 'select all on page'}
+                  </a>
+                </li>
+              )}
+            </ul>
           )}
         </div>
         {selectedCount > 0 && !editMode && (

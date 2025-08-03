@@ -43,6 +43,7 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     getSharedTags,
     getSharedVisibility,
     updateSelectedFilesTags,
+    selectAllOnPage,
   } = useFileSelection();
 
   const currPage = searchParams?.page || '1';
@@ -171,6 +172,35 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
   ]);
   const stableIsSelected = useCallback(isSelected, [isSelected]);
 
+  const areAllPageFilesSelected = useMemo(() => {
+    if (files.length === 0) return false;
+    return files.every((file) => isSelected(file.cid));
+  }, [files, isSelected, selectedFiles]);
+
+  const handleToggleAllOnPage = useCallback(() => {
+    if (areAllPageFilesSelected) {
+      // unselect all files on this page
+      files.forEach((file) => {
+        if (isSelected(file.cid)) {
+          toggleFileSelection({ cid: file.cid, tags: file.tags });
+        }
+      });
+    } else {
+      // select all files on this page
+      const pageFiles: SelectedFile[] = files.map((file) => ({
+        cid: file.cid,
+        tags: file.tags,
+      }));
+      selectAllOnPage(pageFiles);
+    }
+  }, [
+    files,
+    areAllPageFilesSelected,
+    isSelected,
+    toggleFileSelection,
+    selectAllOnPage,
+  ]);
+
   // memoize image creation to prevent unnecessary re-renders
   const imageElements = useMemo(() => {
     return files.map((f: FileType) => (
@@ -237,6 +267,8 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
           onTagSave={handleBatchTagSave}
           onVisibilityChange={handleBatchVisibilityChange}
           onFilesDeleted={handleFilesDeleted}
+          onToggleAllOnPage={handleToggleAllOnPage}
+          areAllPageFilesSelected={areAllPageFilesSelected}
         />
       )}
       {pages && (
@@ -310,6 +342,8 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
           onTagSave={handleBatchTagSave}
           onVisibilityChange={handleBatchVisibilityChange}
           onFilesDeleted={handleFilesDeleted}
+          onToggleAllOnPage={handleToggleAllOnPage}
+          areAllPageFilesSelected={areAllPageFilesSelected}
         />
       )}
     </main>
