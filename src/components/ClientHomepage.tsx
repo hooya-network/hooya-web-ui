@@ -1,20 +1,24 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback, Suspense } from 'react';
+import {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  Suspense,
+  useRef,
+} from 'react';
 import ImageMasonGrid from '@/components/ImageMasonGrid';
 import Search from '@/components/Search';
 import PageNavigation from '@/components/PageNavigation';
 import FileImage from '@/components/FileImage';
 import BatchControls from '@/components/BatchControls';
 import { SelectedFile } from '@/hooks/useFileSelection';
-import {
-  searchFiles,
-  getRecentFiles,
-  getSuggestedTags,
-} from '@/lib/hooya-api-client';
+import { getSuggestedTags } from '@/lib/hooya-api-client';
 import { FileType } from '@/types';
 import { useInstance } from '@/contexts/InstanceContext';
 import { useFileSelection } from '@/hooks/useFileSelection';
+import { usePaginationCache } from '@/hooks/usePaginationCache';
 
 interface ClientHomepageProps {
   searchParams: { [key: string]: string | undefined };
@@ -46,11 +50,17 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     selectAllOnPage,
   } = useFileSelection();
 
+  // Pagination cache hook
+  const { fetchWithCache, preloadAdjacentPages, clearCacheForQuery } =
+    usePaginationCache();
+
   const currPage = searchParams?.page || '1';
   const terms = useMemo(
     () => searchParams?.query?.split(','),
     [searchParams?.query]
   );
+  const prevTermsRef = useRef<string>('');
+  const preloadedPagesRef = useRef<string>('');
 
   // check authentication status
   useEffect(() => {
@@ -78,19 +88,18 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
   // fetch images when page or search terms change
   useEffect(() => {
     async function fetchImages() {
-      // only show main loading on initial load or term changes
-      // use imagesLoading for pagination
-      if (!loading) {
-        setImagesLoading(true);
+      // check if query changed and clear cache if so
+      const currentQuery = terms?.join(',') || '';
+      if (currentQuery !== prevTermsRef.current) {
+        clearCacheForQuery(terms);
+        prevTermsRef.current = currentQuery;
       }
 
+      // only show loading for pagination, not initial load
+      setImagesLoading(true);
+
       try {
-        let resp;
-        if (!terms) {
-          resp = await getRecentFiles(currPage);
-        } else {
-          resp = await searchFiles(terms, [], [], currPage);
-        }
+        const resp = await fetchWithCache(terms, currPage);
 
         if (resp?.final_page_token !== undefined) {
           setPages({
@@ -101,6 +110,13 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
 
         if (resp?.files) {
           setFiles(resp.files);
+
+          // trigger preloading with fresh data immediately
+          const preloadKey = `${currentQuery}:${currPage}`;
+          if (preloadedPagesRef.current !== preloadKey) {
+            preloadedPagesRef.current = preloadKey;
+            preloadAdjacentPages(terms, currPage, resp);
+          }
         }
       } catch (error) {
         console.error('failed to fetch images:', error);
@@ -111,7 +127,8 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     }
 
     fetchImages();
-  }, [currPage, terms, loading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currPage, terms?.join(',')]);
 
   // Batch editing handlers
   const handleBatchTagSave = (updatedFiles: SelectedFile[]) => {
