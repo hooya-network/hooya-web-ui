@@ -141,6 +141,8 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     );
     // update selected files state so shared calculations refresh
     updateSelectedFilesTags(updatedFiles);
+    // clear cache since tag data is now stale
+    clearCacheForQuery(terms);
     // don't clear selection - keep it for additional operations
   };
 
@@ -154,6 +156,8 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     );
     // update selected files state so shared calculations refresh
     updateSelectedFilesTags(updatedFiles);
+    // clear cache since tag/visibility data is now stale
+    clearCacheForQuery(terms);
     // don't clear selection - keep it for additional operations
   };
 
@@ -162,6 +166,8 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
     setFiles((prevFiles) =>
       prevFiles.filter((file) => !deletedCids.includes(file.cid))
     );
+    // clear cache since files are now deleted
+    clearCacheForQuery(terms);
     clearSelection(); // clear since files are gone
   };
 
@@ -189,14 +195,14 @@ export default function ClientHomepage({ searchParams }: ClientHomepageProps) {
       // unselect all files on this page
       files.forEach((file) => {
         if (isSelected(file.cid)) {
-          toggleFileSelection({ cid: file.cid, tags: file.tags });
+          toggleFileSelection({ cid: file.cid, tags: file.tags || [] });
         }
       });
     } else {
       // select all files on this page
       const pageFiles: SelectedFile[] = files.map((file) => ({
         cid: file.cid,
-        tags: file.tags,
+        tags: file.tags || [],
       }));
       selectAllOnPage(pageFiles);
     }

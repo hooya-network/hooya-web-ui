@@ -2,15 +2,7 @@
 
 import { useRef, useCallback } from 'react';
 import { searchFiles, getRecentFiles } from '@/lib/hooya-api-client';
-import { Thumbnail } from '@/types';
-
-interface FileType {
-  cid: string;
-  tags: { namespace: string; descriptor: string }[];
-  ext_file?: {
-    thumbnails?: Thumbnail[];
-  };
-}
+import { FileType } from '@/types';
 
 interface PageData {
   files: FileType[];
