@@ -1,12 +1,19 @@
 // hooya web client with automatic token refresh
 
-import { refreshAccessToken, getAccessToken } from '../utils/auth';
+import {
+  refreshAccessToken,
+  getAccessToken,
+  ensureValidToken,
+} from '../utils/auth';
 
 // enhanced fetch with automatic token refresh
 export async function apiCall(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
+  // proactively ensure valid token before request
+  await ensureValidToken();
+
   const accessToken = getAccessToken();
 
   const headers = {

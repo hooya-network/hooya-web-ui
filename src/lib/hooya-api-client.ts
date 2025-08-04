@@ -1,7 +1,7 @@
 'use client';
 
 import { apiCall } from './hooya-web-client';
-import { setRefreshToken, setAccessToken } from '../utils/auth';
+import { handleSuccessfulLogin } from '../utils/auth';
 import { getWebProxyUrl } from './runtime-config';
 
 // search and file queries
@@ -166,6 +166,52 @@ export async function untagCid(
   return response.status === 204;
 }
 
+export async function batchTagCid(
+  cidTagPairs: {
+    cid: string;
+    tags: { namespace: string; descriptor: string }[];
+  }[]
+) {
+  const endpoint = getWebProxyUrl();
+
+  const response = await apiCall(`${endpoint}/batch-tag-cid`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(cidTagPairs),
+  });
+
+  if (!response.ok) {
+    throw new Error(`failed to batch tag CIDs: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+export async function batchUntagCid(
+  cidTagPairs: {
+    cid: string;
+    tags: { namespace: string; descriptor: string }[];
+  }[]
+) {
+  const endpoint = getWebProxyUrl();
+
+  const response = await apiCall(`${endpoint}/batch-untag-cid`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(cidTagPairs),
+  });
+
+  if (!response.ok) {
+    throw new Error(`failed to batch untag CIDs: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
 export async function forgetFile(cid: string) {
   const endpoint = getWebProxyUrl();
 
@@ -201,9 +247,11 @@ export async function loginUser(password: string) {
 
   const loginResponse = await response.json();
 
-  // store tokens
-  setAccessToken(loginResponse.access_token);
-  setRefreshToken(loginResponse.refresh_token);
+  // store tokens and start refresh timer
+  await handleSuccessfulLogin(
+    loginResponse.access_token,
+    loginResponse.refresh_token
+  );
 
   return { success: true };
 }

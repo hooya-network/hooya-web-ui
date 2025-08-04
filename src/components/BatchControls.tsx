@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { tagCid, untagCid, forgetFile } from '@/lib/hooya-api-client';
+import { batchTagCid, batchUntagCid, forgetFile } from '@/lib/hooya-api-client';
 import { SelectedFile } from '@/hooks/useFileSelection';
 
 interface Tag {
@@ -106,6 +106,8 @@ export default function BatchControls({
     setSaving(true);
     try {
       const updatedFiles: SelectedFile[] = [];
+      const addCidTagPairs: { cid: string; tags: Tag[] }[] = [];
+      const removeCidTagPairs: { cid: string; tags: Tag[] }[] = [];
 
       for (const file of selectedFiles) {
         const fileTagSet = new Set(
@@ -124,16 +126,23 @@ export default function BatchControls({
         );
 
         if (addedTags.length > 0) {
-          await tagCid(file.cid, addedTags);
+          addCidTagPairs.push({ cid: file.cid, tags: addedTags });
         }
         if (removedTags.length > 0) {
-          await untagCid(file.cid, removedTags);
+          removeCidTagPairs.push({ cid: file.cid, tags: removedTags });
         }
 
         updatedFiles.push({
           ...file,
           tags: tags,
         });
+      }
+
+      if (addCidTagPairs.length > 0) {
+        await batchTagCid(addCidTagPairs);
+      }
+      if (removeCidTagPairs.length > 0) {
+        await batchUntagCid(removeCidTagPairs);
       }
 
       onTagSave(updatedFiles);
@@ -153,20 +162,22 @@ export default function BatchControls({
     setVisibilityLoading(true);
     try {
       const updatedFiles: SelectedFile[] = [];
+      const removeCidTagPairs: { cid: string; tags: Tag[] }[] = [];
+      const addCidTagPairs: { cid: string; tags: Tag[] }[] = [];
 
       for (const file of selectedFiles) {
         const visibilityTags = file.tags.filter(
           (tag) => tag.namespace === 'visibility'
         );
         if (visibilityTags.length > 0) {
-          await untagCid(file.cid, visibilityTags);
+          removeCidTagPairs.push({ cid: file.cid, tags: visibilityTags });
         }
 
         let newTags = file.tags.filter((tag) => tag.namespace !== 'visibility');
 
         if (newVisibility !== 'public') {
           const newTag = { namespace: 'visibility', descriptor: newVisibility };
-          await tagCid(file.cid, [newTag]);
+          addCidTagPairs.push({ cid: file.cid, tags: [newTag] });
           newTags = [...newTags, newTag];
         }
 
@@ -174,6 +185,13 @@ export default function BatchControls({
           ...file,
           tags: newTags,
         });
+      }
+
+      if (removeCidTagPairs.length > 0) {
+        await batchUntagCid(removeCidTagPairs);
+      }
+      if (addCidTagPairs.length > 0) {
+        await batchTagCid(addCidTagPairs);
       }
 
       onVisibilityChange(updatedFiles);

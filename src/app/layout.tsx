@@ -1,6 +1,7 @@
 import DeepHeader from '@/components/DeepHeader';
 import Footer from '@/components/Footer';
 import { InstanceProvider } from '@/contexts/InstanceContext';
+import { AuthProvider } from '@/components/AuthProvider';
 import './global.css';
 
 export const metadata = {
@@ -21,11 +22,13 @@ export default function RootLayout({
         <Script src="/config.js" strategy="beforeInteractive" />
       </head>
       <body>
-        <InstanceProvider>
-          <DeepHeader />
-          {children}
-          <Footer />
-        </InstanceProvider>
+        <AuthProvider>
+          <InstanceProvider>
+            <DeepHeader />
+            {children}
+            <Footer />
+          </InstanceProvider>
+        </AuthProvider>
       </body>
     </html>
   );
